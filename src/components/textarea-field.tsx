@@ -10,7 +10,7 @@ export const TextAreaField: React.FunctionComponent<ITextAreaFieldProps> = ({
   id,
   ...props
 }) => (
-  <FormGroup>
+  <FormGroup required={props.required}>
     {labelText && <label htmlFor={id}>{labelText}</label>}
     <TextArea id={id} {...props} />
   </FormGroup>
