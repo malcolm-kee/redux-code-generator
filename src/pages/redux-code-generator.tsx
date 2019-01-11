@@ -6,7 +6,10 @@ import generateTests from '../code-generators/generate-tests';
 import generateSelectors from '../code-generators/generator-selectors';
 import { InputField } from '../components/input-field';
 import { Section } from '../components/section';
-import { TextAreaField } from '../components/textarea-field';
+import {
+  TextAreaField,
+  TextAreaFieldCollapsible
+} from '../components/textarea-field';
 
 const parseJson = (jsonString: string) => {
   try {
@@ -24,6 +27,16 @@ const initialState = `{
     "age": 21
   }
 }`;
+
+const styles: React.CSSProperties = {
+  fontFamily: "Consolas, 'Courier New', monospace"
+};
+
+const CodeContainer: React.FunctionComponent = ({ children }) => (
+  <div className="col-xs-12 col-md-6">
+    <div className="Box">{children}</div>
+  </div>
+);
 
 export class ReduxCodeGenerator extends React.Component {
   state = {
@@ -58,6 +71,7 @@ export class ReduxCodeGenerator extends React.Component {
                   id="initial-state"
                   required={true}
                   autoFocus={true}
+                  style={styles}
                 />
               </div>
               <div className="col-xs-12 col-md-6">
@@ -66,6 +80,7 @@ export class ReduxCodeGenerator extends React.Component {
                   value={this.state.storePrefix}
                   onChangeValue={this.handleSetStorePrefix}
                   id="store-prefix"
+                  style={styles}
                 />
               </div>
             </div>
@@ -74,8 +89,8 @@ export class ReduxCodeGenerator extends React.Component {
         <Section>
           <div className="container">
             <div className="row">
-              <div className="col-xs-12 col-md-6">
-                <TextAreaField
+              <CodeContainer>
+                <TextAreaFieldCollapsible
                   labelText="Action Keys"
                   value={
                     initialStateObject
@@ -86,11 +101,12 @@ export class ReduxCodeGenerator extends React.Component {
                       : ''
                   }
                   id="action-keys"
+                  style={styles}
                   readOnly
                 />
-              </div>
-              <div className="col-xs-12 col-md-6">
-                <TextAreaField
+              </CodeContainer>
+              <CodeContainer>
+                <TextAreaFieldCollapsible
                   labelText="Action Creators"
                   value={
                     initialStateObject
@@ -101,11 +117,12 @@ export class ReduxCodeGenerator extends React.Component {
                       : ''
                   }
                   id="action-creators"
+                  style={styles}
                   readOnly
                 />
-              </div>
-              <div className="col-xs-12 col-md-6">
-                <TextAreaField
+              </CodeContainer>
+              <CodeContainer>
+                <TextAreaFieldCollapsible
                   labelText="Reducer"
                   value={
                     initialStateObject
@@ -116,11 +133,12 @@ export class ReduxCodeGenerator extends React.Component {
                       : ''
                   }
                   id="reducer"
+                  style={styles}
                   readOnly
                 />
-              </div>
-              <div className="col-xs-12 col-md-6">
-                <TextAreaField
+              </CodeContainer>
+              <CodeContainer>
+                <TextAreaFieldCollapsible
                   labelText="Selectors"
                   value={
                     initialStateObject
@@ -131,11 +149,12 @@ export class ReduxCodeGenerator extends React.Component {
                       : ''
                   }
                   id="selectors"
+                  style={styles}
                   readOnly
                 />
-              </div>
-              <div className="col-xs-12">
-                <TextAreaField
+              </CodeContainer>
+              <CodeContainer>
+                <TextAreaFieldCollapsible
                   labelText="Tests"
                   value={
                     initialStateObject
@@ -146,9 +165,10 @@ export class ReduxCodeGenerator extends React.Component {
                       : ''
                   }
                   id="selectors"
+                  style={styles}
                   readOnly
                 />
-              </div>
+              </CodeContainer>
             </div>
           </div>
         </Section>
