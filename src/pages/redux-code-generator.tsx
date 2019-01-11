@@ -2,6 +2,7 @@ import * as React from 'react';
 import generateActionCreators from '../code-generators/generate-action-creators';
 import generateActionKeys from '../code-generators/generate-action-keys';
 import generateReducer from '../code-generators/generate-reducer';
+import generateSelectors from '../code-generators/generator-selectors';
 import { InputField } from '../components/input-field';
 import { TextAreaField } from '../components/textarea-field';
 
@@ -53,7 +54,7 @@ export class ReduxCodeGenerator extends React.Component {
           </div>
         </div>
         <div className="row">
-          <div className="col-xs-12 col-md-4">
+          <div className="col-xs-12 col-md-6">
             <TextAreaField
               labelText="Action Keys"
               value={
@@ -64,10 +65,11 @@ export class ReduxCodeGenerator extends React.Component {
                     )
                   : ''
               }
+              id="action-keys"
               readOnly
             />
           </div>
-          <div className="col-xs-12 col-md-4">
+          <div className="col-xs-12 col-md-6">
             <TextAreaField
               labelText="Action Creators"
               value={
@@ -78,10 +80,11 @@ export class ReduxCodeGenerator extends React.Component {
                     )
                   : ''
               }
+              id="action-creators"
               readOnly
             />
           </div>
-          <div className="col-xs-12 col-md-4">
+          <div className="col-xs-12 col-md-6">
             <TextAreaField
               labelText="Reducer"
               value={
@@ -89,6 +92,22 @@ export class ReduxCodeGenerator extends React.Component {
                   ? generateReducer(initialStateObject, this.state.storePrefix)
                   : ''
               }
+              id="reducer"
+              readOnly
+            />
+          </div>
+          <div className="col-xs-12 col-md-6">
+            <TextAreaField
+              labelText="Selectors"
+              value={
+                initialStateObject
+                  ? generateSelectors(
+                      initialStateObject,
+                      this.state.storePrefix
+                    )
+                  : ''
+              }
+              id="selectors"
               readOnly
             />
           </div>

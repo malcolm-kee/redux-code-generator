@@ -58,13 +58,14 @@ function writeActionCreators(
   if (object) {
     Object.keys(object).forEach(key => {
       const value = object[key];
+      const valueType = typeof value;
 
       if (value) {
-        switch (typeof value) {
+        switch (valueType) {
           case 'boolean':
           case 'string':
           case 'number':
-            writeActionCreator(writer, typeof value, ...prefixes, key);
+            writeActionCreator(writer, valueType, ...prefixes, key);
             break;
 
           case 'object':

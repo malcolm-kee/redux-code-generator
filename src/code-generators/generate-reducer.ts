@@ -60,21 +60,23 @@ function writeReducerForObject(
   ...prefixes: string[]
 ) {
   Object.keys(object).forEach(key => {
-    const defaultValue = object[key];
+    const value = object[key];
 
-    switch (typeof defaultValue) {
-      case 'boolean':
-      case 'string':
-      case 'number':
-        writeReducerCase(writer, ...prefixes, key);
-        break;
+    if (value) {
+      switch (typeof value) {
+        case 'boolean':
+        case 'string':
+        case 'number':
+          writeReducerCase(writer, ...prefixes, key);
+          break;
 
-      case 'object':
-        writeReducerForObject(writer, defaultValue, ...prefixes, key);
-        break;
+        case 'object':
+          writeReducerForObject(writer, value, ...prefixes, key);
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
   });
 }
