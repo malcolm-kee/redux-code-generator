@@ -1,5 +1,6 @@
 import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
+import { isNil } from '../lib';
 
 function writeActionKeysForValue(writer: CodeBlockWriter, ...keys: string[]) {
   const ACTION_NAME = [
@@ -18,7 +19,7 @@ function writeActionKeysForObject(
     Object.keys(object).forEach(key => {
       const value = object[key];
 
-      if (value) {
+      if (!isNil(value)) {
         switch (typeof value) {
           case 'boolean':
           case 'string':

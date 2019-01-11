@@ -1,6 +1,6 @@
 import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
-import { lastItem } from '../lib';
+import { lastItem, isNil } from '../lib';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
@@ -62,7 +62,7 @@ function writeReducerForObject(
   Object.keys(object).forEach(key => {
     const value = object[key];
 
-    if (value) {
+    if (!isNil(value)) {
       switch (typeof value) {
         case 'boolean':
         case 'string':

@@ -1,14 +1,16 @@
 import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
-import { lastItem, capitalize } from '../lib';
+import { lastItem, capitalize, isNil } from '../lib';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
-    writer.writeLine(`// ${prefix}-actions.js`);
-    writer.writeLine(`import * as actionKeys from './${prefix}-action-keys';`);
+    writer
+      .writeLine(`// ${prefix}-actions.js`)
+      .writeLine(`import * as actionKeys from './${prefix}-action-keys';`);
   } else {
-    writer.writeLine(`// actions.js`);
-    writer.writeLine(`import * as actionKeys from './action-keys';`);
+    writer
+      .writeLine(`// actions.js`)
+      .writeLine(`import * as actionKeys from './action-keys';`);
   }
 }
 
@@ -60,7 +62,7 @@ function writeActionCreators(
       const value = object[key];
       const valueType = typeof value;
 
-      if (value) {
+      if (!isNil(value)) {
         switch (valueType) {
           case 'boolean':
           case 'string':
