@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { TextAreaField } from '../components/textarea-field';
+import generateActionCreators from '../code-generators/generate-action-creators';
 import generateActionKeys from '../code-generators/generate-action-keys';
-import { InputField } from '../components/input-field';
 import generateReducer from '../code-generators/generate-reducer';
+import { InputField } from '../components/input-field';
+import { TextAreaField } from '../components/textarea-field';
 
 const parseJson = (jsonString: string) => {
   try {
@@ -58,6 +59,20 @@ export class ReduxCodeGenerator extends React.Component {
               value={
                 initialStateObject
                   ? generateActionKeys(
+                      initialStateObject,
+                      this.state.storePrefix
+                    )
+                  : ''
+              }
+              readOnly
+            />
+          </div>
+          <div className="col-xs-12 col-md-4">
+            <TextAreaField
+              labelText="Action Creators"
+              value={
+                initialStateObject
+                  ? generateActionCreators(
                       initialStateObject,
                       this.state.storePrefix
                     )

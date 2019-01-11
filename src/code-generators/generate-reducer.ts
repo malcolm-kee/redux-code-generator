@@ -1,5 +1,6 @@
 import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
+import { lastItem } from '../lib';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
@@ -27,7 +28,7 @@ function writeReducerCaseReturn(
     if (keys.length === depth + 1) {
       const parentPaths = keys.slice(0, -1);
       writer.writeLine(`...${['state', ...parentPaths].join('.')},`);
-      writer.writeLine(`${keys[keys.length - 1]}: action.payload`);
+      writer.writeLine(`${lastItem(keys)}: action.payload`);
     } else {
       const currentPaths = keys.slice(0, depth);
       writer.writeLine(`...${['state', ...currentPaths].join('.')},`);
