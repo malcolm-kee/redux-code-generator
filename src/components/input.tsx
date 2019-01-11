@@ -9,12 +9,13 @@ export interface InputProps
   onChangeValue?: (value: string) => void;
 }
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ onChangeValue, onChange, ...props }) => (
+  ({ onChangeValue, onChange, ...props }, ref) => (
     <input
       onChange={callAll(
         onChange,
         onChangeValue && (ev => onChangeValue(ev.target.value))
       )}
+      ref={ref}
       {...props}
     />
   )
