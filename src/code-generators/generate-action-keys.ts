@@ -41,8 +41,11 @@ function writeActionKeysForObject(
 export const generateActionKeys = (
   storeInitialState: any,
   prefix: string = ''
-): string => {
+) => {
   const writer = getWriter();
+
+  writer.conditionalWriteLine(!prefix, `// action-keys.js`);
+  writer.conditionalWriteLine(!!prefix, `// ${prefix}-action-keys.js`);
 
   writeActionKeysForObject(writer, storeInitialState, prefix);
 
