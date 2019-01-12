@@ -2,11 +2,20 @@ import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
 import { isNil } from '../lib';
 
-function writeActionKeysForValue(writer: CodeBlockWriter, ...keys: string[]) {
-  const ACTION_NAME = [
+export const getActionKey = (keys: string[]) =>
+  [
     'SET',
-    ...keys.map(key => key.toUpperCase()).filter(Boolean)
+    ...keys
+      .reduce<string[]>(
+        (result, key) => result.concat(key.split(/(?=[A-Z])/)),
+        []
+      )
+      .map(key => key.toUpperCase())
+      .filter(Boolean)
   ].join('_');
+
+function writeActionKeysForValue(writer: CodeBlockWriter, ...keys: string[]) {
+  const ACTION_NAME = getActionKey(keys);
   writer.writeLine(`export const ${ACTION_NAME} = '${ACTION_NAME}';`);
 }
 

@@ -1,6 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
 import { lastItem, isNil } from '../lib';
+import { getActionKey } from './generate-action-keys';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
@@ -39,10 +40,7 @@ function writeReducerCaseReturn(
 }
 
 function writeReducerCase(writer: CodeBlockWriter, ...keys: string[]) {
-  const ACTION_KEY = [
-    'SET',
-    ...keys.filter(Boolean).map(key => key.toUpperCase())
-  ].join('_');
+  const ACTION_KEY = getActionKey(keys);
 
   writer.writeLine(`case actionKeys.${ACTION_KEY}:`);
   writer.indentBlock(() => {

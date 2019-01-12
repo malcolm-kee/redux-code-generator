@@ -1,6 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
 import { lastItem, capitalize, isNil } from '../lib';
+import { getActionKey } from './generate-action-keys';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
@@ -24,12 +25,9 @@ function writeActionCreator(
   paramType: string,
   ...keys: string[]
 ) {
-  const sanitizedKeys = keys.filter(Boolean);
+  const actionKey = getActionKey(keys);
 
-  const actionKey = [
-    'SET',
-    ...sanitizedKeys.map(key => key.toUpperCase())
-  ].join('_');
+  const sanitizedKeys = keys.filter(Boolean);
 
   const paramName = lastItem(sanitizedKeys);
 
