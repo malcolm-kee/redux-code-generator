@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Button } from './button';
+import CopyToClipboard from 'react-copy-to-clipboard';
+import { Button, ButtonGroup } from './button';
 const { default: Highlight, defaultProps } = require('prism-react-renderer');
 
 type CodeSnippetProps = {
@@ -49,11 +50,14 @@ export class CodeSnippetCollapsible extends React.Component<
         >
           <CodeSnippet {...props} />
         </div>
-        <div className="ButtonRow">
+        <ButtonGroup>
           <Button onClick={this.handleToggle}>
             {this.state.showAll ? 'Show Less' : 'Show More'}
           </Button>
-        </div>
+          <CopyToClipboard text={props.code}>
+            <Button variant="success">Copy</Button>
+          </CopyToClipboard>
+        </ButtonGroup>
       </>
     );
   }

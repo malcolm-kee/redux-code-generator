@@ -1,21 +1,20 @@
 import * as React from 'react';
-import CopyToClipboard from 'react-copy-to-clipboard';
 import generateActionCreators from '../code-generators/generate-action-creators';
 import generateActionKeys from '../code-generators/generate-action-keys';
 import generateReducer from '../code-generators/generate-reducer';
 import generateTests from '../code-generators/generate-tests';
 import generateSelectors from '../code-generators/generator-selectors';
+import { CodeSnippetCollapsible } from '../components/code-snippet';
 import { InputField } from '../components/input-field';
+import { Navbar, NavbarBrand, NavbarHeader } from '../components/navbar';
+import {
+  Panel,
+  PanelBody,
+  PanelHeading,
+  PanelTitle
+} from '../components/panel';
 import { Section } from '../components/section';
-import {
-  TextAreaField,
-  TextAreaFieldCollapsible
-} from '../components/textarea-field';
-import {
-  CodeSnippet,
-  CodeSnippetCollapsible
-} from '../components/code-snippet';
-import { Button } from '../components/button';
+import { TextAreaField } from '../components/textarea-field';
 
 const parseJson = (jsonString: string) => {
   try {
@@ -43,17 +42,14 @@ const CodeContainer: React.FunctionComponent<{
   code: string;
 }> = ({ title, code }) => (
   <div className="col-xs-12 col-md-6">
-    <div className="Box">
-      <div className="row">
-        <h3 className="col-xs-8">{title}</h3>
-        <div className="col-xs-4 text-right">
-          <CopyToClipboard text={code}>
-            <Button variant="success">Copy</Button>
-          </CopyToClipboard>
-        </div>
-      </div>
-      <CodeSnippetCollapsible code={code} />
-    </div>
+    <Panel>
+      <PanelHeading>
+        <PanelTitle>{title}</PanelTitle>
+      </PanelHeading>
+      <PanelBody>
+        <CodeSnippetCollapsible code={code} />
+      </PanelBody>
+    </Panel>
   </div>
 );
 
@@ -74,11 +70,11 @@ export class ReduxCodeGenerator extends React.Component {
 
     return (
       <div>
-        <div className="container">
-          <div className="row">
-            <h2>Redux Code Generator</h2>
-          </div>
-        </div>
+        <Navbar variant="inverse">
+          <NavbarHeader>
+            <NavbarBrand>Redux Code Generator</NavbarBrand>
+          </NavbarHeader>
+        </Navbar>
         <Section variant="highlight">
           <div className="container">
             <div className="row">
