@@ -18,21 +18,21 @@ import { TextAreaField } from '../components/textarea-field';
 
 const parseJson = (jsonString: string) => {
   try {
-    return JSON.parse(jsonString);
+    return JSON.parse(JSON.stringify(eval(`(${jsonString})`)));
   } catch (e) {
     return null;
   }
 };
 
 const initialState = `{
-  "name": "",
-  "isLoading": true,
-  "customer": {
-    "email": "",
-    "age": 21,
-    "info": null
+  name: '',
+  isLoading: true,
+  customer: {
+    email: '',
+    age: 21,
+    info: null
   },
-  "data": null
+  data: null
 }`;
 
 const styles: React.CSSProperties = {
