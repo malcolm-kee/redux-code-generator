@@ -29,8 +29,10 @@ const initialState = `{
   "isLoading": true,
   "customer": {
     "email": "",
-    "age": 21
-  }
+    "age": 21,
+    "info": null
+  },
+  "data": null
 }`;
 
 const styles: React.CSSProperties = {

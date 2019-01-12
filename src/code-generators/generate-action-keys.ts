@@ -34,6 +34,8 @@ function writeActionKeysForObject(
           default:
             break;
         }
+      } else {
+        writeActionKeysForValue(writer, ...prefixes, key);
       }
     });
   }
@@ -45,8 +47,11 @@ export const generateActionKeys = (
 ) => {
   const writer = getWriter();
 
-  writer.conditionalWriteLine(!prefix, `// action-keys.js`);
-  writer.conditionalWriteLine(!!prefix, `// ${prefix}-action-keys.js`);
+  if (prefix) {
+    writer.writeLine(`// ${prefix}-action-keys.js`);
+  } else {
+    writer.writeLine(`// action-keys.js`);
+  }
 
   writeActionKeysForObject(writer, storeInitialState, prefix);
 

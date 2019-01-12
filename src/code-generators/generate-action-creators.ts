@@ -77,6 +77,8 @@ function writeActionCreators(
           default:
             break;
         }
+      } else {
+        writeActionCreator(writer, '*', ...prefixes, key);
       }
     });
   }

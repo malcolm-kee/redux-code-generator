@@ -1,5 +1,5 @@
 import CodeBlockWriter from 'code-block-writer';
-import { capitalize, lastItem } from '../lib';
+import { capitalize, lastItem, isNil } from '../lib';
 import generateData from './generate-data';
 import getWriter from './get-writer';
 
@@ -30,20 +30,20 @@ function writeImports(writer: CodeBlockWriter, prefix: string) {
 
 function writeTest(
   writer: CodeBlockWriter,
-  valueType: 'string' | 'boolean' | 'number',
+  valueType: 'string' | 'boolean' | 'number' | null,
   ...keys: string[]
 ) {
   const actionCreatorName = getActionCreatorName(keys);
-  const data = generateData(valueType, lastItem(keys));
+  const data = valueType ? generateData(valueType, lastItem(keys)) : `{}`;
   const selectorName = getSelectorName(keys);
 
   writer
     .write(`test('${actionCreatorName}', () => `)
     .inlineBlock(() => {
       writer
-        .writeLine(
-          `const action = actionCreators.${actionCreatorName}(${data});`
-        )
+        .write(`const action = actionCreators.${actionCreatorName}(${data});`)
+        .conditionalWrite(!valueType, () => ` // populate data?`)
+        .newLine()
         .writeLine(
           `const finalState = ${getReducerName(keys[0])}(initialState, action);`
         )
@@ -67,19 +67,23 @@ function writeTests(
     const value = object[key];
     const valueType = typeof value;
 
-    switch (valueType) {
-      case 'boolean':
-      case 'string':
-      case 'number':
-        writeTest(writer, valueType, ...prefixes, key);
-        break;
+    if (!isNil(value)) {
+      switch (valueType) {
+        case 'boolean':
+        case 'string':
+        case 'number':
+          writeTest(writer, valueType, ...prefixes, key);
+          break;
 
-      case 'object':
-        writeTests(writer, value, ...prefixes, key);
-        break;
+        case 'object':
+          writeTests(writer, value, ...prefixes, key);
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
+    } else {
+      writeTest(writer, null, ...prefixes, key);
     }
   });
 }

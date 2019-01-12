@@ -77,6 +77,8 @@ function writeReducerForObject(
         default:
           break;
       }
+    } else {
+      writeReducerCase(writer, ...prefixes, key);
     }
   });
 }
