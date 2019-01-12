@@ -8,7 +8,7 @@ An application to generate redux code based on initial states.
 
 ## The problem
 
-You love the redux where everything is simple and explicit, but you hates to write so many codes just to do a operation. Introducing abstration may reduce the code, but it is no longer simple and explicit.
+You love redux where everything is simple and explicit, but you hates to write so many codes just to do a operation. Introducing abstration may reduce the code, but it is no longer simple and explicit.
 
 ## This solution
 
