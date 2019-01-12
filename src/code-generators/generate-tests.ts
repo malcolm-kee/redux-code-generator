@@ -1,16 +1,12 @@
 import CodeBlockWriter from 'code-block-writer';
-import { capitalize, lastItem, isNil } from '../lib';
+import { isNil, lastItem } from '../lib';
+import { getActionCreatorName } from './generate-action-creators';
 import generateData from './generate-data';
+import { getSelectorName } from './generate-selectors';
 import getWriter from './get-writer';
 
 const getReducerName = (prefix: string) =>
   prefix ? `${prefix}Reducer` : 'rootReducer';
-
-const getActionCreatorName = (keys: string[]) =>
-  ['set', ...keys.filter(Boolean).map(capitalize)].join('');
-
-const getSelectorName = (keys: string[]) =>
-  ['select', ...keys.filter(Boolean).map(capitalize)].join('');
 
 function writeImports(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {

@@ -3,7 +3,7 @@ import generateActionCreators from '../code-generators/generate-action-creators'
 import generateActionKeys from '../code-generators/generate-action-keys';
 import generateReducer from '../code-generators/generate-reducer';
 import generateTests from '../code-generators/generate-tests';
-import generateSelectors from '../code-generators/generator-selectors';
+import generateSelectors from '../code-generators/generate-selectors';
 import { CodeSnippetCollapsible } from '../components/code-snippet';
 import { InputField } from '../components/input-field';
 import { Navbar, NavbarBrand, NavbarHeader } from '../components/navbar';

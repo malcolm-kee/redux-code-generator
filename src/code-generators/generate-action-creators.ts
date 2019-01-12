@@ -3,6 +3,9 @@ import getWriter from './get-writer';
 import { lastItem, capitalize, isNil } from '../lib';
 import { getActionKey } from './generate-action-keys';
 
+export const getActionCreatorName = (keys: string[]) =>
+  ['set', ...keys.filter(Boolean).map(capitalize)].join('');
+
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
     writer
@@ -31,15 +34,13 @@ function writeActionCreator(
 
   const paramName = lastItem(sanitizedKeys);
 
-  const functionName = ['set', ...sanitizedKeys.map(capitalize)].join('');
-
   writer
     .writeLine('/**')
     .writeLine(` * @param {${paramType}} ${paramName} `)
     .writeLine(' */');
 
   writer
-    .write(`export const ${functionName} = ${paramName} => (`)
+    .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
     .inlineBlock(() => {
       writer.writeLine(`type: actionKeys.${actionKey},`);
       writer.writeLine(`payload: ${paramName}`);

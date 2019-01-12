@@ -2,18 +2,20 @@ import CodeBlockWriter from 'code-block-writer';
 import getWriter from './get-writer';
 import { capitalize, isNil } from '../lib';
 
+const getBaseSelectorName = (prefix: string) =>
+  prefix ? `select${capitalize(prefix)}State` : 'selectState';
+
+export const getSelectorName = (keys: string[]) =>
+  ['select', ...keys.filter(Boolean).map(capitalize)].join('');
+
 function writeBaseSelector(writer: CodeBlockWriter, prefix: string) {
-  if (prefix) {
-    writer
-      .writeLine(`// get the state of this store`)
-      .writeLine(
-        `const select${prefix.toUpperCase()}State = state => state.${prefix};`
-      );
-  } else {
-    writer
-      .writeLine(`// get the state of this store`)
-      .writeLine(`const selectState = state => state;`);
-  }
+  writer
+    .writeLine(`// get the state of this store`)
+    .writeLine(
+      prefix
+        ? `const ${getBaseSelectorName(prefix)} = state => state.${prefix};`
+        : `const ${getBaseSelectorName(prefix)} = state => state;`
+    );
 }
 
 function writeSelector(
@@ -21,14 +23,6 @@ function writeSelector(
   returnType: string | null,
   ...keys: string[]
 ) {
-  const selectorName = ['select', ...keys.filter(Boolean).map(capitalize)].join(
-    ''
-  );
-
-  const baseSelectorName = keys[0]
-    ? `select${keys[0].toUpperCase()}State`
-    : `selectState`;
-
   const paths = keys.slice(1);
 
   if (returnType) {
@@ -40,9 +34,9 @@ function writeSelector(
 
   writer
     .writeLine(
-      `export const ${selectorName} = state => ${baseSelectorName}(state).${paths.join(
-        '.'
-      )}`
+      `export const ${getSelectorName(keys)} = state => ${getBaseSelectorName(
+        keys[0]
+      )}(state).${paths.join('.')};`
     )
     .blankLine();
 }

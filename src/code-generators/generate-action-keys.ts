@@ -1,6 +1,6 @@
 import CodeBlockWriter from 'code-block-writer';
-import getWriter from './get-writer';
 import { isNil } from '../lib';
+import getWriter from './get-writer';
 
 export const getActionKey = (keys: string[]) =>
   [
@@ -56,11 +56,9 @@ export const generateActionKeys = (
 ) => {
   const writer = getWriter();
 
-  if (prefix) {
-    writer.writeLine(`// ${prefix}-action-keys.js`);
-  } else {
-    writer.writeLine(`// action-keys.js`);
-  }
+  writer.writeLine(
+    prefix ? `// ${prefix}-action-keys.js` : `// action-keys.js`
+  );
 
   writeActionKeysForObject(writer, storeInitialState, prefix);
 
