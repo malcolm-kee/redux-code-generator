@@ -1,11 +1,34 @@
 import CodeBlockWriter from 'code-block-writer';
+import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
 import { capitalize, lastItem } from '../lib';
-import { getActionKey } from './generate-action-keys';
+import {
+  getActionKey,
+  getAddToArrayActionKey,
+  getRemoveFromArrayActionKey
+} from './generate-action-keys';
 import getWriter from './get-writer';
 
 export const getActionCreatorName = (keys: string[]) =>
   ['set', ...keys.filter(Boolean).map(capitalize)].join('');
+
+export const getAddToArrayActionCreatorName = (keys: string[]) => {
+  const terms = keys.filter(Boolean);
+  const finalKeys = [...terms.slice(0, -1), singular(lastItem(terms))].map(
+    capitalize
+  );
+
+  return ['add', ...finalKeys].join('');
+};
+
+export const getRemoveFromArrayActionCreatorName = (keys: string[]) => {
+  const terms = keys.filter(Boolean);
+  const finalKeys = [...terms.slice(0, -1), singular(lastItem(terms))].map(
+    capitalize
+  );
+
+  return ['remove', ...finalKeys].join('');
+};
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
@@ -19,11 +42,6 @@ function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   }
 }
 
-/**
- *
- * @param writer
- * @param keys
- */
 function writeActionCreator(
   writer: CodeBlockWriter,
   paramType: string,
@@ -38,41 +56,138 @@ function writeActionCreator(
   writer
     .writeLine('/**')
     .writeLine(` * @param {${paramType}} ${paramName} `)
-    .writeLine(' */');
-
-  writer
+    .writeLine(' */')
     .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
     .inlineBlock(() => {
       writer.writeLine(`type: actionKeys.${actionKey},`);
       writer.writeLine(`payload: ${paramName}`);
-    });
+    })
+    .write(');')
+    .blankLine();
+}
 
-  writer.write(');');
+function writeArrayActionCreator(
+  writer: CodeBlockWriter,
+  paramType: string,
+  ...keys: string[]
+) {
+  const paramName = lastItem(keys);
+  const singularParam = singular(paramName);
+  writer
+    .writeLine('/**')
+    .writeLine(
+      ` * @param {${
+        paramType === '*' ? 'Array' : `${paramType}[]`
+      }} ${paramName} `
+    )
+    .writeLine(' */')
+    .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
+    .inlineBlock(() => {
+      writer.writeLine(`type: actionKeys.${getActionKey(keys)},`);
+      writer.writeLine(`payload: ${paramName}`);
+    })
+    .write(');')
+    .blankLine()
+    .writeLine('/**')
+    .writeLine(` * @param {${paramType}} ${singularParam} `)
+    .writeLine(' */')
+    .write(
+      `export const ${getAddToArrayActionCreatorName(
+        keys
+      )} = ${singularParam} => (`
+    )
+    .inlineBlock(() => {
+      writer.writeLine(`type: actionKeys.${getAddToArrayActionKey(keys)},`);
+      writer.writeLine(`payload: ${singularParam}`);
+    })
+    .write(');')
+    .blankLine()
+    .writeLine('/**')
+    .writeLine(` * @param {number} index `)
+    .writeLine(' */')
+    .write(
+      `export const ${getRemoveFromArrayActionCreatorName(keys)} = index => (`
+    )
+    .inlineBlock(() => {
+      writer.writeLine(
+        `type: actionKeys.${getRemoveFromArrayActionKey(keys)},`
+      );
+      writer.writeLine(`payload: index`);
+    })
+    .write(');')
+    .blankLine();
+}
 
-  writer.blankLine();
+function writeArrayItemActionCreator(
+  writer: CodeBlockWriter,
+  paramType: string,
+  ...keys: string[]
+) {
+  const actionKey = getActionKey(keys);
+
+  const sanitizedKeys = keys.filter(Boolean);
+
+  const paramName = lastItem(sanitizedKeys);
+
+  writer
+    .writeLine('/**')
+    .writeLine(` * @param {number} index `)
+    .writeLine(` * @param {${paramType}} ${paramName} `)
+    .writeLine(' */')
+    .write(
+      `export const ${getActionCreatorName(keys)} = (index, ${paramName}) => (`
+    )
+    .inlineBlock(() => {
+      writer.writeLine(`type: actionKeys.${actionKey},`);
+      writer.writeLine(`payload: { index, ${paramName} }`);
+    })
+    .write(');')
+    .blankLine();
 }
 
 function writeActionCreators(
   writer: CodeBlockWriter,
   object: any,
+  isArrayItem: boolean,
   ...prefixes: string[]
 ) {
   if (object) {
     Object.keys(object).forEach(key => {
-      const value = object[key];
+      const isArray = Array.isArray(object[key]);
+      const value = isArray ? object[key][0] : object[key];
       const valueType = typeof value;
+
+      if (isArray) {
+        writeArrayActionCreator(
+          writer,
+          isNil(value) || valueType === 'object' ? '*' : valueType,
+          ...prefixes,
+          key
+        );
+      }
 
       if (!isNil(value)) {
         switch (valueType) {
           case 'boolean':
           case 'string':
           case 'number':
-            writeActionCreator(writer, valueType, ...prefixes, key);
-            break;
+            return isArray || isArrayItem
+              ? writeArrayItemActionCreator(
+                  writer,
+                  valueType,
+                  ...prefixes,
+                  singular(key)
+                )
+              : writeActionCreator(writer, valueType, ...prefixes, key);
 
           case 'object':
-            writeActionCreators(writer, value, ...prefixes, key);
-            break;
+            return writeActionCreators(
+              writer,
+              value,
+              isArray,
+              ...prefixes,
+              isArray ? singular(key) : key
+            );
 
           default:
             break;
@@ -91,7 +206,7 @@ export const generateActionCreators = (storeInitialState: any, prefix = '') => {
 
   writer.blankLine();
 
-  writeActionCreators(writer, storeInitialState, prefix);
+  writeActionCreators(writer, storeInitialState, false, prefix);
 
   return writer.toString();
 };

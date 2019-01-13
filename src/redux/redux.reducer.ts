@@ -7,6 +7,12 @@ import * as actions from './redux.actions';
 import { ReduxCodeStore } from './redux.type';
 
 const initialState = `{
+    connections: [
+      {
+        type: 'colleague'
+      }
+    ],
+    friends: [''],
     name: '',
     isLoading: true,
     customer: {

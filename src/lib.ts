@@ -9,4 +9,7 @@ export const removeNewLine = (oriString: string) =>
 export const capitalize = (oriString: string) =>
   oriString.charAt(0).toUpperCase() + oriString.slice(1);
 
+export const upperCase = (oriString: string) =>
+  oriString && oriString.toUpperCase();
+
 export const lastItem = <T>(array: T[]) => array[array.length - 1];

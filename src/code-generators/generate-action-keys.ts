@@ -1,22 +1,53 @@
 import CodeBlockWriter from 'code-block-writer';
+import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
+import { lastItem, upperCase } from '../lib';
 import getWriter from './get-writer';
+
+const splitKeyWords = (words: string[]) =>
+  words.reduce<string[]>(
+    (result, key) => result.concat(key.split(/(?=[A-Z])/)),
+    []
+  );
 
 export const getActionKey = (keys: string[]) =>
   [
     'SET',
-    ...keys
-      .reduce<string[]>(
-        (result, key) => result.concat(key.split(/(?=[A-Z])/)),
-        []
-      )
-      .map(key => key.toUpperCase())
+    ...splitKeyWords(keys)
+      .map(upperCase)
       .filter(Boolean)
   ].join('_');
 
+export const getAddToArrayActionKey = (keys: string[]) => {
+  const terms = splitKeyWords(keys.filter(Boolean));
+  const finalKeys = [...terms.slice(0, -1), singular(lastItem(terms))].map(
+    upperCase
+  );
+
+  return ['ADD', ...finalKeys].join('_');
+};
+
+export const getRemoveFromArrayActionKey = (keys: string[]) => {
+  const terms = splitKeyWords(keys.filter(Boolean));
+  const finalKeys = [...terms.slice(0, -1), singular(lastItem(terms))].map(
+    upperCase
+  );
+
+  return ['REMOVE', ...finalKeys].join('_');
+};
+
+function writeActionKey(writer: CodeBlockWriter, actionName: string) {
+  writer.writeLine(`export const ${actionName} = '${actionName}';`);
+}
+
 function writeActionKeysForValue(writer: CodeBlockWriter, ...keys: string[]) {
-  const ACTION_NAME = getActionKey(keys);
-  writer.writeLine(`export const ${ACTION_NAME} = '${ACTION_NAME}';`);
+  writeActionKey(writer, getActionKey(keys));
+}
+
+function writeActionKeysForArray(writer: CodeBlockWriter, ...keys: string[]) {
+  writeActionKey(writer, getActionKey(keys));
+  writeActionKey(writer, getAddToArrayActionKey(keys));
+  writeActionKey(writer, getRemoveFromArrayActionKey(keys));
 }
 
 function writeActionKeysForObject(
@@ -26,19 +57,28 @@ function writeActionKeysForObject(
 ) {
   if (object) {
     Object.keys(object).forEach(key => {
-      const value = object[key];
+      const isArray = Array.isArray(object[key]);
+
+      const value = isArray ? object[key][0] : object[key];
+
+      if (isArray) {
+        writeActionKeysForArray(writer, ...prefixes, key);
+      }
 
       if (!isNil(value)) {
         switch (typeof value) {
           case 'boolean':
           case 'string':
           case 'number':
-            writeActionKeysForValue(writer, ...prefixes, key);
-            break;
+            return writeActionKeysForValue(writer, ...prefixes, singular(key));
 
           case 'object':
-            writeActionKeysForObject(writer, value, ...prefixes, key);
-            break;
+            return writeActionKeysForObject(
+              writer,
+              value,
+              ...prefixes,
+              singular(key)
+            );
 
           default:
             break;
