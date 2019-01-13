@@ -1,7 +1,8 @@
 import CodeBlockWriter from 'code-block-writer';
-import getWriter from './get-writer';
-import { lastItem, isNil } from '../lib';
+import { isNil } from 'typesafe-is';
+import { lastItem } from '../lib';
 import { getActionKey } from './generate-action-keys';
+import getWriter from './get-writer';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {

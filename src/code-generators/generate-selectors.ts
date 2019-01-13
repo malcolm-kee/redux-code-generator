@@ -1,6 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
+import { isNil } from 'typesafe-is';
+import { capitalize } from '../lib';
 import getWriter from './get-writer';
-import { capitalize, isNil } from '../lib';
 
 const getBaseSelectorName = (prefix: string) =>
   prefix ? `select${capitalize(prefix)}State` : 'selectState';

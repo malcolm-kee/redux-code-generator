@@ -1,5 +1,6 @@
 import CodeBlockWriter from 'code-block-writer';
-import { isNil, lastItem } from '../lib';
+import { isNil } from 'typesafe-is';
+import { lastItem } from '../lib';
 import { getActionCreatorName } from './generate-action-creators';
 import generateData from './generate-data';
 import { getSelectorName } from './generate-selectors';

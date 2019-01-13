@@ -1,7 +1,8 @@
 import CodeBlockWriter from 'code-block-writer';
-import getWriter from './get-writer';
-import { lastItem, capitalize, isNil } from '../lib';
+import { isNil } from 'typesafe-is';
+import { capitalize, lastItem } from '../lib';
 import { getActionKey } from './generate-action-keys';
+import getWriter from './get-writer';
 
 export const getActionCreatorName = (keys: string[]) =>
   ['set', ...keys.filter(Boolean).map(capitalize)].join('');

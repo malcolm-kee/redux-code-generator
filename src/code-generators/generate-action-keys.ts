@@ -1,5 +1,5 @@
 import CodeBlockWriter from 'code-block-writer';
-import { isNil } from '../lib';
+import { isNil } from 'typesafe-is';
 import getWriter from './get-writer';
 
 export const getActionKey = (keys: string[]) =>

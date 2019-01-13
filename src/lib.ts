@@ -10,6 +10,3 @@ export const capitalize = (oriString: string) =>
   oriString.charAt(0).toUpperCase() + oriString.slice(1);
 
 export const lastItem = <T>(array: T[]) => array[array.length - 1];
-
-export const isNil = (value: any): value is undefined =>
-  typeof value === 'undefined' || value === null;
