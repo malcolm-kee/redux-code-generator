@@ -78,7 +78,7 @@ export const generateSelectors = (storeInitialState: any, prefix = '') => {
   const writer = getWriter();
 
   writer
-    .writeLine(prefix ? `// ${prefix}-selectors.js` : '// selectors.js')
+    .writeLine(prefix ? `// ${prefix}.selectors.js` : '// selectors.js')
     .blankLine();
 
   writeBaseSelector(writer, prefix);

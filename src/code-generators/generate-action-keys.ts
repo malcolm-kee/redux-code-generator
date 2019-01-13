@@ -57,7 +57,7 @@ export const generateActionKeys = (
   const writer = getWriter();
 
   writer.writeLine(
-    prefix ? `// ${prefix}-action-keys.js` : `// action-keys.js`
+    prefix ? `// ${prefix}.action-keys.js` : `// action-keys.js`
   );
 
   writeActionKeysForObject(writer, storeInitialState, prefix);

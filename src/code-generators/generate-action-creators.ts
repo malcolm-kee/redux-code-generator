@@ -10,8 +10,8 @@ export const getActionCreatorName = (keys: string[]) =>
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
     writer
-      .writeLine(`// ${prefix}-actions.js`)
-      .writeLine(`import * as actionKeys from './${prefix}-action-keys';`);
+      .writeLine(`// ${prefix}.actions.js`)
+      .writeLine(`import * as actionKeys from './${prefix}.action-keys';`);
   } else {
     writer
       .writeLine(`// actions.js`)

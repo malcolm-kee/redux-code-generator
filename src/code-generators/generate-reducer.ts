@@ -6,8 +6,8 @@ import getWriter from './get-writer';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
-    writer.writeLine(`// ${prefix}-reducer.js`);
-    writer.writeLine(`import * as actionKeys from './${prefix}-action-keys';`);
+    writer.writeLine(`// ${prefix}.reducer.js`);
+    writer.writeLine(`import * as actionKeys from './${prefix}.action-keys';`);
   } else {
     writer.writeLine(`// root-reducer.js`);
     writer.writeLine(`import * as actionKeys from './action-keys';`);

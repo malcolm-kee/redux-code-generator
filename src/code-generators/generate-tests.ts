@@ -13,9 +13,9 @@ function writeImports(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
     writer
       .writeLine(`// ${prefix}-store.test.js`)
-      .writeLine(`import * as actionCreators from './${prefix}-actions';`)
-      .writeLine(`import ${getReducerName(prefix)} from './${prefix}-reducer';`)
-      .writeLine(`import * as selectors from './${prefix}-selectors';`);
+      .writeLine(`import * as actionCreators from './${prefix}.actions';`)
+      .writeLine(`import ${getReducerName(prefix)} from './${prefix}.reducer';`)
+      .writeLine(`import * as selectors from './${prefix}.selectors';`);
   } else {
     writer
       .writeLine(`// store.test.js`)
