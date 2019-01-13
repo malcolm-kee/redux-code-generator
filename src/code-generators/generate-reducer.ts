@@ -1,7 +1,12 @@
 import CodeBlockWriter from 'code-block-writer';
+import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
 import { lastItem } from '../lib';
-import { getActionKey } from './generate-action-keys';
+import {
+  getActionKey,
+  getAddToArrayActionKey,
+  getRemoveFromArrayActionKey
+} from './generate-action-keys';
 import getWriter from './get-writer';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
@@ -40,17 +45,89 @@ function writeReducerCaseReturn(
   });
 }
 
-function writeReducerCase(writer: CodeBlockWriter, ...keys: string[]) {
-  const ACTION_KEY = getActionKey(keys);
-
-  writer.writeLine(`case actionKeys.${ACTION_KEY}:`);
-  writer.indentBlock(() => {
-    writer.write('return ');
-
-    writeReducerCaseReturn(writer, keys.slice(1));
+function writeReducerArrayOperationCaseReturn(
+  writer: CodeBlockWriter,
+  keys: string[],
+  operation: 'add' | 'remove' | 'set',
+  depth = 0
+) {
+  writer.block(() => {
+    if (keys.length === depth + 1) {
+      const parentPaths = keys.slice(0, -1);
+      writer.writeLine(`...${['state', ...parentPaths].join('.')},`);
+      if (operation === 'add') {
+        writer.writeLine(
+          `${lastItem(keys)}: ${keys.join('.')}.concat(action.payload)`
+        );
+      } else if (operation === 'remove') {
+        writer.writeLine(
+          `${lastItem(keys)}: ${keys.join(
+            '.'
+          )}.filter((_, index) => index !== action.payload)`
+        );
+      } else {
+        writer.writeLine(
+          `${lastItem(keys)}: ${keys.join(
+            '.'
+          )}.map((item, index) => index === action.payload.index ? action.payload.${singular(
+            lastItem(keys)
+          )} : item)`
+        );
+      }
+    } else {
+      const currentPaths = keys.slice(0, depth);
+      writer.writeLine(`...${['state', ...currentPaths].join('.')},`);
+      writer.write(`${keys[depth]}: `);
+      writeReducerArrayOperationCaseReturn(writer, keys, operation, depth + 1);
+    }
   });
+}
 
-  writer.blankLine();
+function writeReducerCase(writer: CodeBlockWriter, ...keys: string[]) {
+  writer
+    .writeLine(`case actionKeys.${getActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return ');
+      writeReducerCaseReturn(writer, keys.slice(1)); // exclude prefix
+    })
+    .blankLine();
+}
+
+function writeReducerArrayCase(writer: CodeBlockWriter, ...keys: string[]) {
+  writer
+    .writeLine(`case actionKeys.${getActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return ');
+      writeReducerCaseReturn(writer, keys.slice(1)); // exclude prefix
+    })
+    .blankLine()
+    .writeLine(`case actionKeys.${getAddToArrayActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return');
+      writeReducerArrayOperationCaseReturn(writer, keys.slice(1), 'add');
+    })
+    .blankLine()
+    .writeLine(`case actionKeys.${getRemoveFromArrayActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return');
+      writeReducerArrayOperationCaseReturn(writer, keys.slice(1), 'remove');
+    })
+    .blankLine();
+}
+
+function writeReducerArrayItemCase(writer: CodeBlockWriter, ...keys: string[]) {
+  writer
+    .writeLine(
+      `case actionKeys.${getActionKey([
+        ...keys.slice(0, -1),
+        singular(lastItem(keys))
+      ])}:`
+    )
+    .indentBlock(() => {
+      writer.write('return ');
+      writeReducerArrayOperationCaseReturn(writer, keys.slice(1), 'set'); // exclude prefix
+    })
+    .blankLine();
 }
 
 function writeReducerForObject(
@@ -59,18 +136,30 @@ function writeReducerForObject(
   ...prefixes: string[]
 ) {
   Object.keys(object).forEach(key => {
-    const value = object[key];
+    const isArray = object[key];
+    const value = isArray ? object[key][0] : object[key];
+
+    if (isArray) {
+      writeReducerArrayCase(writer, ...prefixes, key);
+    }
 
     if (!isNil(value)) {
       switch (typeof value) {
         case 'boolean':
         case 'string':
         case 'number':
-          writeReducerCase(writer, ...prefixes, key);
+          isArray
+            ? writeReducerArrayItemCase(writer, ...prefixes, key)
+            : writeReducerCase(writer, ...prefixes, key);
           break;
 
         case 'object':
-          writeReducerForObject(writer, value, ...prefixes, key);
+          writeReducerForObject(
+            writer,
+            value,
+            ...prefixes,
+            isArray ? singular(key) : key
+          );
           break;
 
         default:
