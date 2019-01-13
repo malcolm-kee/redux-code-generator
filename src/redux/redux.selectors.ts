@@ -18,3 +18,6 @@ export const selectParsedInitialState = (state: RootStore) =>
 
 export const selectReduxCodeStorePrefix = (state: RootStore) =>
   selectReduxCodeStore(state).storePrefix;
+
+export const selectReduxLanguage = (state: RootStore) =>
+  selectReduxCodeStore(state).language;

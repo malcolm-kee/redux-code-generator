@@ -1,7 +1,8 @@
 import { ActionType } from 'typesafe-actions';
 import {
   SET_REDUX_INITIAL_STATE,
-  SET_REDUX_STORE_PREFIX
+  SET_REDUX_STORE_PREFIX,
+  SET_REDUX_LANGUAGE
 } from './redux.action-keys';
 import * as actions from './redux.actions';
 import { ReduxCodeStore } from './redux.type';
@@ -19,7 +20,8 @@ const initialState = `{
 
 const DEFAULT_STATE: ReduxCodeStore = {
   initialState,
-  storePrefix: ''
+  storePrefix: '',
+  language: 'javascript'
 };
 
 export type ReduxCodeAction = ActionType<typeof actions>;
@@ -39,6 +41,12 @@ export const reduxCodeReducer = (
       return {
         ...state,
         storePrefix: action.payload
+      };
+
+    case SET_REDUX_LANGUAGE:
+      return {
+        ...state,
+        language: action.payload
       };
 
     default:

@@ -5,13 +5,16 @@ import { Section } from '../components/section';
 import { TextAreaField } from '../components/textarea-field';
 import {
   setReduxInitialState,
-  setReduxStorePrefix
+  setReduxStorePrefix,
+  setReduxLanguage
 } from '../redux/redux.actions';
 import {
   selectReduxCodeInitialState,
-  selectReduxCodeStorePrefix
+  selectReduxCodeStorePrefix,
+  selectReduxLanguage
 } from '../redux/redux.selectors';
 import { RootStore } from '../redux/root.type';
+import { SelectField } from '../components/select-field';
 
 const styles: React.CSSProperties = {
   fontFamily: "Consolas, 'Courier New', monospace"
@@ -20,14 +23,18 @@ const styles: React.CSSProperties = {
 type ReduxCodeFormProps = {
   initialState: string;
   storePrefix: string;
+  language: 'javascript' | 'typescript';
   setInitialState: (value: string) => void;
   setStorePrefix: (value: string) => void;
+  setLanguage: (language: 'javascript' | 'typescript') => void;
 };
 const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
   initialState,
   storePrefix,
+  language,
   setInitialState,
-  setStorePrefix
+  setStorePrefix,
+  setLanguage
 }) => (
   <Section variant="highlight">
     <div className="container">
@@ -51,6 +58,14 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
             id="store-prefix"
             style={styles}
           />
+          <SelectField
+            labelText="Language"
+            value={language}
+            onChangeValue={setLanguage as any}
+          >
+            <option value="javascript">Javascript</option>
+            <option value="typescript">Typescript</option>
+          </SelectField>
         </div>
       </div>
     </div>
@@ -59,12 +74,14 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
 
 const mapStates = (state: RootStore) => ({
   initialState: selectReduxCodeInitialState(state),
-  storePrefix: selectReduxCodeStorePrefix(state)
+  storePrefix: selectReduxCodeStorePrefix(state),
+  language: selectReduxLanguage(state)
 });
 
 const mapDispatch = {
   setInitialState: setReduxInitialState,
-  setStorePrefix: setReduxStorePrefix
+  setStorePrefix: setReduxStorePrefix,
+  setLanguage: setReduxLanguage
 };
 
 export const ReduxCodeForm = connect(
