@@ -14,5 +14,7 @@ export const upperCase = (oriString: string) =>
 
 export const lastItem = <T>(array: T[]) => array[array.length - 1];
 
-export const isBoolStrNum = (type: string) =>
+export const isBoolStrNum = (
+  type: string
+): type is 'boolean' | 'string' | 'number' =>
   type === 'boolean' || type === 'string' || type === 'number';

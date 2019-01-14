@@ -1,7 +1,11 @@
 import CodeBlockWriter from 'code-block-writer';
 import { isNil } from 'typesafe-is';
-import { lastItem } from '../lib';
-import { getActionCreatorName } from './generate-action-creators';
+import { lastItem, isBoolStrNum } from '../lib';
+import {
+  getActionCreatorName,
+  getAddToArrayActionCreatorName,
+  getRemoveFromArrayActionCreatorName
+} from './generate-action-creators';
 import generateData from './generate-data';
 import { getSelectorName } from './generate-selectors';
 import getWriter from './get-writer';
@@ -55,29 +59,116 @@ function writeTest(
     .blankLine();
 }
 
+function writeArrayOperationTests(
+  writer: CodeBlockWriter,
+  value: any,
+  ...keys: string[]
+) {
+  const valueType = typeof value;
+  const canGenerateData = !isNil(value) && isBoolStrNum(valueType);
+  const setArraysActionCreatorName = getActionCreatorName(keys);
+  const addToArrayActionCreatorName = getAddToArrayActionCreatorName(keys);
+  const removeFromArrayActionCreatorName = getRemoveFromArrayActionCreatorName(
+    keys
+  );
+  const data = canGenerateData
+    ? generateData(valueType as any, lastItem(keys))
+    : '{}';
+  const secondData = canGenerateData
+    ? generateData(valueType as any, lastItem(keys))
+    : '{}';
+  const selectorName = getSelectorName(keys);
+
+  writer
+    .write(`test('${setArraysActionCreatorName}', () => `)
+    .inlineBlock(() => {
+      writer
+        .write(
+          `const action = actionCreators.${setArraysActionCreatorName}([${data}]);`
+        )
+        .conditionalWrite(!canGenerateData, () => ` // populate data?`)
+        .newLine()
+        .writeLine(
+          `const finalState = ${getReducerName(keys[0])}(initialState, action);`
+        )
+        .blankLine()
+        .writeLine(
+          `expect(selectors.${selectorName}(finalState)).toEqual(${data})`
+        )
+        .writeLine(`// assert new object is created`)
+        .writeLine(`expect(finalState).not.toBe(initialState);`);
+    })
+    .write(');')
+    .blankLine()
+    .write(`test('${addToArrayActionCreatorName}', () => `)
+    .inlineBlock(() => {
+      writer
+        .write(
+          `const action = actionCreators.${addToArrayActionCreatorName}(${secondData});`
+        )
+        .conditionalWrite(!canGenerateData, () => ` // populate data?`)
+        .newLine()
+        .writeLine(
+          `const finalState = ${getReducerName(keys[0])}(initialState, action);`
+        )
+        .blankLine()
+        .writeLine(
+          `expect(selectors.${selectorName}(finalState)).toContainEqual(${secondData})`
+        )
+        .writeLine(`// assert new object is created`)
+        .writeLine(`expect(finalState).not.toBe(initialState);`);
+    })
+    .write(');')
+    .blankLine()
+    .write(`test('${removeFromArrayActionCreatorName}', () => `)
+    .inlineBlock(() => {
+      writer.writeLine(
+        `const oriState = ${getReducerName(
+          keys[0]
+        )}(initialState, actions.${setArraysActionCreatorName}([${data}, ${secondData}]))`
+      );
+      writer
+        .write(
+          `const action = actionCreators.${removeFromArrayActionCreatorName}(0);`
+        )
+        .conditionalWrite(!canGenerateData, () => ` // populate data?`)
+        .newLine()
+        .writeLine(
+          `const finalState = ${getReducerName(keys[0])}(oriState, action);`
+        )
+        .blankLine()
+        .writeLine(
+          `expect(selectors.${selectorName}(finalState)).not.toContainEqual(${data})`
+        )
+        .writeLine(
+          `expect(selectors.${selectorName}(finalState)).toContainEqual(${secondData})`
+        )
+        .writeLine(`// assert new object is created`)
+        .writeLine(`expect(finalState).not.toBe(initialState);`);
+    })
+    .write(');')
+    .blankLine();
+}
+
 function writeTests(
   writer: CodeBlockWriter,
   object: any,
   ...prefixes: string[]
 ) {
   Object.keys(object).forEach(key => {
-    const value = object[key];
+    const isArray = Array.isArray(object[key]);
+    const value = isArray ? object[key][0] : object[key];
     const valueType = typeof value;
 
+    if (isArray) {
+      writeArrayOperationTests(writer, value, ...prefixes, key);
+    }
+
     if (!isNil(value)) {
-      switch (valueType) {
-        case 'boolean':
-        case 'string':
-        case 'number':
-          writeTest(writer, valueType, ...prefixes, key);
-          break;
-
-        case 'object':
-          writeTests(writer, value, ...prefixes, key);
-          break;
-
-        default:
-          break;
+      if (isBoolStrNum(valueType)) {
+        writeTest(writer, valueType, ...prefixes, key);
+      } else {
+        writeTests(writer, value, ...prefixes, key);
       }
     } else {
       writeTest(writer, null, ...prefixes, key);

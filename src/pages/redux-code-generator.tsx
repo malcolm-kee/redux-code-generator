@@ -19,11 +19,11 @@ export const ReduxCodeGenerator = () => (
     <Section>
       <div className="container">
         <div className="row">
+          <ReduxCodeGeneratedTests />
           <ReduxCodeGeneratedActionKeys />
           <ReduxCodeGeneratedActionCreators />
           <ReduxCodeGeneratedReducer />
           <ReduxCodeGeneratedSelectors />
-          <ReduxCodeGeneratedTests />
         </div>
       </div>
     </Section>

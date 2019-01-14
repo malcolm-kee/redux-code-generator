@@ -13,7 +13,7 @@ const initialState = `{
         con: { man: 'Malcolm', data: null }
       }
   ],
-  friends: [''],
+  friendNames: [''],
   name: '',
   isLoading: true,
   customer: {
