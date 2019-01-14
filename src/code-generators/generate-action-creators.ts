@@ -145,10 +145,37 @@ function writeArrayItemActionCreator(
     .blankLine();
 }
 
+function writeObjectArrayItemActionCreator(
+  writer: CodeBlockWriter,
+  object: any,
+  ...keys: string[]
+) {
+  Object.keys(object).forEach(key => {
+    const value = object[key];
+    const valueType = typeof value;
+
+    if (!isNil(value)) {
+      switch (valueType) {
+        case 'boolean':
+        case 'string':
+        case 'number':
+          return writeArrayItemActionCreator(writer, valueType, ...keys, key);
+
+        case 'object':
+          return writeObjectArrayItemActionCreator(writer, value, ...keys, key);
+
+        default:
+          break;
+      }
+    } else {
+      writeArrayItemActionCreator(writer, '*', ...keys, key);
+    }
+  });
+}
+
 function writeActionCreators(
   writer: CodeBlockWriter,
   object: any,
-  isArrayItem: boolean,
   ...prefixes: string[]
 ) {
   if (object) {
@@ -171,7 +198,7 @@ function writeActionCreators(
           case 'boolean':
           case 'string':
           case 'number':
-            return isArray || isArrayItem
+            return isArray
               ? writeArrayItemActionCreator(
                   writer,
                   valueType,
@@ -181,13 +208,14 @@ function writeActionCreators(
               : writeActionCreator(writer, valueType, ...prefixes, key);
 
           case 'object':
-            return writeActionCreators(
-              writer,
-              value,
-              isArray,
-              ...prefixes,
-              isArray ? singular(key) : key
-            );
+            return isArray
+              ? writeObjectArrayItemActionCreator(
+                  writer,
+                  value,
+                  ...prefixes,
+                  singular(key)
+                )
+              : writeActionCreators(writer, value, ...prefixes, key);
 
           default:
             break;
@@ -206,7 +234,7 @@ export const generateActionCreators = (storeInitialState: any, prefix = '') => {
 
   writer.blankLine();
 
-  writeActionCreators(writer, storeInitialState, false, prefix);
+  writeActionCreators(writer, storeInitialState, prefix);
 
   return writer.toString();
 };
