@@ -1,7 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem } from '../lib';
+import { lastItem, isBoolStrNum } from '../lib';
 import {
   getActionKey,
   getAddToArrayActionKey,
@@ -206,26 +206,15 @@ function writeReducerArrayItemObjectCase(
     const propValue = value[key];
 
     if (!isNil(propValue)) {
-      switch (typeof propValue) {
-        case 'boolean':
-        case 'string':
-        case 'number':
-          return writeReducerArrayItemDescendantCase(writer, keysToArray, [
+      isBoolStrNum(typeof propValue)
+        ? writeReducerArrayItemDescendantCase(writer, keysToArray, [
+            ...propPath,
+            key
+          ])
+        : writeReducerArrayItemObjectCase(writer, propValue, keysToArray, [
             ...propPath,
             key
           ]);
-
-        case 'object':
-          return writeReducerArrayItemObjectCase(
-            writer,
-            propValue,
-            keysToArray,
-            [...propPath, key]
-          );
-
-        default:
-          break;
-      }
     } else {
       writeReducerArrayItemDescendantCase(writer, keysToArray, [
         ...propPath,
@@ -249,21 +238,14 @@ function writeReducerForObject(
     }
 
     if (!isNil(value)) {
-      switch (typeof value) {
-        case 'boolean':
-        case 'string':
-        case 'number':
-          return isArray
-            ? writeReducerArrayItemCase(writer, ...prefixes, key)
-            : writeReducerCase(writer, ...prefixes, key);
-
-        case 'object':
-          return isArray
-            ? writeReducerArrayItemObjectCase(writer, value, [...prefixes, key])
-            : writeReducerForObject(writer, value, ...prefixes, key);
-
-        default:
-          break;
+      if (isBoolStrNum(typeof value)) {
+        isArray
+          ? writeReducerArrayItemCase(writer, ...prefixes, key)
+          : writeReducerCase(writer, ...prefixes, key);
+      } else {
+        isArray
+          ? writeReducerArrayItemObjectCase(writer, value, [...prefixes, key])
+          : writeReducerForObject(writer, value, ...prefixes, key);
       }
     } else {
       writeReducerCase(writer, ...prefixes, key);

@@ -1,7 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { capitalize, lastItem } from '../lib';
+import { capitalize, lastItem, isBoolStrNum } from '../lib';
 import {
   getActionKey,
   getAddToArrayActionKey,
@@ -155,18 +155,9 @@ function writeObjectArrayItemActionCreator(
     const valueType = typeof value;
 
     if (!isNil(value)) {
-      switch (valueType) {
-        case 'boolean':
-        case 'string':
-        case 'number':
-          return writeArrayItemActionCreator(writer, valueType, ...keys, key);
-
-        case 'object':
-          return writeObjectArrayItemActionCreator(writer, value, ...keys, key);
-
-        default:
-          break;
-      }
+      isBoolStrNum(valueType)
+        ? writeArrayItemActionCreator(writer, valueType, ...keys, key)
+        : writeObjectArrayItemActionCreator(writer, value, ...keys, key);
     } else {
       writeArrayItemActionCreator(writer, '*', ...keys, key);
     }
@@ -194,31 +185,24 @@ function writeActionCreators(
       }
 
       if (!isNil(value)) {
-        switch (valueType) {
-          case 'boolean':
-          case 'string':
-          case 'number':
-            return isArray
-              ? writeArrayItemActionCreator(
-                  writer,
-                  valueType,
-                  ...prefixes,
-                  singular(key)
-                )
-              : writeActionCreator(writer, valueType, ...prefixes, key);
-
-          case 'object':
-            return isArray
-              ? writeObjectArrayItemActionCreator(
-                  writer,
-                  value,
-                  ...prefixes,
-                  singular(key)
-                )
-              : writeActionCreators(writer, value, ...prefixes, key);
-
-          default:
-            break;
+        if (isBoolStrNum(valueType)) {
+          isArray
+            ? writeArrayItemActionCreator(
+                writer,
+                valueType,
+                ...prefixes,
+                singular(key)
+              )
+            : writeActionCreator(writer, valueType, ...prefixes, key);
+        } else {
+          isArray
+            ? writeObjectArrayItemActionCreator(
+                writer,
+                value,
+                ...prefixes,
+                singular(key)
+              )
+            : writeActionCreators(writer, value, ...prefixes, key);
         }
       } else {
         writeActionCreator(writer, '*', ...prefixes, key);

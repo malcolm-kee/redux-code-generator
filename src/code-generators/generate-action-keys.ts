@@ -1,7 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem, upperCase } from '../lib';
+import { lastItem, upperCase, isBoolStrNum } from '../lib';
 import getWriter from './get-writer';
 
 const splitKeyWords = (words: string[]) =>
@@ -66,23 +66,9 @@ function writeActionKeysForObject(
       }
 
       if (!isNil(value)) {
-        switch (typeof value) {
-          case 'boolean':
-          case 'string':
-          case 'number':
-            return writeActionKeysForValue(writer, ...prefixes, singular(key));
-
-          case 'object':
-            return writeActionKeysForObject(
-              writer,
-              value,
-              ...prefixes,
-              singular(key)
-            );
-
-          default:
-            break;
-        }
+        isBoolStrNum(typeof value)
+          ? writeActionKeysForValue(writer, ...prefixes, singular(key))
+          : writeActionKeysForObject(writer, value, ...prefixes, singular(key));
       } else {
         writeActionKeysForValue(writer, ...prefixes, key);
       }

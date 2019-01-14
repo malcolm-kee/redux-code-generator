@@ -13,3 +13,6 @@ export const upperCase = (oriString: string) =>
   oriString && oriString.toUpperCase();
 
 export const lastItem = <T>(array: T[]) => array[array.length - 1];
+
+export const isBoolStrNum = (type: string) =>
+  type === 'boolean' || type === 'string' || type === 'number';
