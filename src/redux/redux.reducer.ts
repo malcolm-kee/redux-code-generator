@@ -10,7 +10,7 @@ const initialState = `{
   connections: [
       {
         type: 'colleague',
-        con: { man: 'Malcolm' }
+        con: { man: 'Malcolm', data: null }
       }
   ],
   friends: [''],

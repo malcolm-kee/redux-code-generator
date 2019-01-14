@@ -153,14 +153,55 @@ function writeReducerArrayItemCase(writer: CodeBlockWriter, ...keys: string[]) {
     .blankLine();
 }
 
+function writeReducerArrayItemDescendantCase(
+  writer: CodeBlockWriter,
+  keysToArray: string[],
+  propPath: string[]
+) {
+  const pathsToArray = keysToArray.slice(1);
+
+  writer
+    .writeLine(
+      `case actionKeys.${getActionKey([
+        ...keysToArray.slice(0, -1),
+        singular(lastItem(keysToArray)),
+        ...propPath
+      ])}:`
+    )
+    .indentBlock(() => {
+      writer.write('return ').block(() => {
+        pathsToArray.forEach((_, index) => {
+          if (pathsToArray.length === index + 1) {
+            const parentPaths = pathsToArray.slice(0, -1);
+            writer
+              .writeLine(`...${['state', ...parentPaths].join('.')},`)
+              .writeLine(
+                `${lastItem(pathsToArray)}: ${['state', ...pathsToArray].join(
+                  '.'
+                )}.map((item, index) => index !== action.payload.index`
+              )
+              .writeLine(`? item`)
+              .write(':');
+            writeReducerArrayItemCaseReturn(writer, propPath);
+
+            writer.write(')');
+          } else {
+            const currentPaths = pathsToArray.slice(0, index);
+            writer.writeLine(`...${['state', ...currentPaths].join('.')},`);
+            writer.write(`${pathsToArray[index]}: `);
+          }
+        });
+      });
+    })
+    .blankLine();
+}
+
 function writeReducerArrayItemObjectCase(
   writer: CodeBlockWriter,
   value: any,
   keysToArray: string[],
   propPath: string[] = []
 ) {
-  const pathsToArray = keysToArray.slice(1);
-
   Object.keys(value).forEach(key => {
     const propValue = value[key];
 
@@ -169,46 +210,10 @@ function writeReducerArrayItemObjectCase(
         case 'boolean':
         case 'string':
         case 'number':
-          return writer
-            .writeLine(
-              `case actionKeys.${getActionKey([
-                ...keysToArray.slice(0, -1),
-                singular(lastItem(keysToArray)),
-                ...propPath,
-                key
-              ])}:`
-            )
-            .indentBlock(() => {
-              writer.write('return ').block(() => {
-                pathsToArray.forEach((_, index) => {
-                  if (pathsToArray.length === index + 1) {
-                    const parentPaths = pathsToArray.slice(0, -1);
-                    writer
-                      .writeLine(`...${['state', ...parentPaths].join('.')},`)
-                      .writeLine(
-                        `${lastItem(pathsToArray)}: ${[
-                          'state',
-                          ...pathsToArray
-                        ].join(
-                          '.'
-                        )}.map((item, index) => index !== action.payload.index`
-                      )
-                      .writeLine(`? item`)
-                      .write(':');
-                    writeReducerArrayItemCaseReturn(writer, [...propPath, key]);
-
-                    writer.write(')');
-                  } else {
-                    const currentPaths = pathsToArray.slice(0, index);
-                    writer.writeLine(
-                      `...${['state', ...currentPaths].join('.')},`
-                    );
-                    writer.write(`${pathsToArray[index]}: `);
-                  }
-                });
-              });
-            })
-            .blankLine();
+          return writeReducerArrayItemDescendantCase(writer, keysToArray, [
+            ...propPath,
+            key
+          ]);
 
         case 'object':
           return writeReducerArrayItemObjectCase(
@@ -221,6 +226,11 @@ function writeReducerArrayItemObjectCase(
         default:
           break;
       }
+    } else {
+      writeReducerArrayItemDescendantCase(writer, keysToArray, [
+        ...propPath,
+        key
+      ]);
     }
   });
 }
