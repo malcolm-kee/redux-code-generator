@@ -57,17 +57,19 @@ function writeReducerArrayOperationCaseReturn(
       writer.writeLine(`...${['state', ...parentPaths].join('.')},`);
       if (operation === 'add') {
         writer.writeLine(
-          `${lastItem(keys)}: ${keys.join('.')}.concat(action.payload)`
+          `${lastItem(keys)}: ${['state', ...keys].join(
+            '.'
+          )}.concat(action.payload)`
         );
       } else if (operation === 'remove') {
         writer.writeLine(
-          `${lastItem(keys)}: ${keys.join(
+          `${lastItem(keys)}: ${['state', ...keys].join(
             '.'
           )}.filter((_, index) => index !== action.payload)`
         );
       } else {
         writer.writeLine(
-          `${lastItem(keys)}: ${keys.join(
+          `${lastItem(keys)}: ${['state', ...keys].join(
             '.'
           )}.map((item, index) => index === action.payload.index ? action.payload.${singular(
             lastItem(keys)
@@ -79,6 +81,27 @@ function writeReducerArrayOperationCaseReturn(
       writer.writeLine(`...${['state', ...currentPaths].join('.')},`);
       writer.write(`${keys[depth]}: `);
       writeReducerArrayOperationCaseReturn(writer, keys, operation, depth + 1);
+    }
+  });
+}
+
+function writeReducerArrayItemCaseReturn(
+  writer: CodeBlockWriter,
+  propPath: string[] = [],
+  depth = 0
+) {
+  writer.block(() => {
+    if (propPath.length === depth + 1) {
+      const parentPaths = propPath.slice(0, -1);
+      writer.writeLine(`...${['item', ...parentPaths].join('.')},`);
+      writer.writeLine(
+        `${lastItem(propPath)}: action.payload.${lastItem(propPath)}`
+      );
+    } else {
+      const currentPaths = propPath.slice(0, depth);
+      writer.writeLine(`...${['item', ...currentPaths].join('.')},`);
+      writer.write(`${propPath[depth]}: `);
+      writeReducerArrayItemCaseReturn(writer, propPath, depth + 1);
     }
   });
 }
@@ -130,13 +153,85 @@ function writeReducerArrayItemCase(writer: CodeBlockWriter, ...keys: string[]) {
     .blankLine();
 }
 
+function writeReducerArrayItemObjectCase(
+  writer: CodeBlockWriter,
+  value: any,
+  keysToArray: string[],
+  propPath: string[] = []
+) {
+  const pathsToArray = keysToArray.slice(1);
+
+  Object.keys(value).forEach(key => {
+    const propValue = value[key];
+
+    if (!isNil(propValue)) {
+      switch (typeof propValue) {
+        case 'boolean':
+        case 'string':
+        case 'number':
+          return writer
+            .writeLine(
+              `case actionKeys.${getActionKey([
+                ...keysToArray.slice(0, -1),
+                singular(lastItem(keysToArray)),
+                ...propPath,
+                key
+              ])}:`
+            )
+            .indentBlock(() => {
+              writer.write('return ').block(() => {
+                pathsToArray.forEach((_, index) => {
+                  if (pathsToArray.length === index + 1) {
+                    const parentPaths = pathsToArray.slice(0, -1);
+                    writer
+                      .writeLine(`...${['state', ...parentPaths].join('.')},`)
+                      .writeLine(
+                        `${lastItem(pathsToArray)}: ${[
+                          'state',
+                          ...pathsToArray
+                        ].join(
+                          '.'
+                        )}.map((item, index) => index !== action.payload.index`
+                      )
+                      .writeLine(`? item`)
+                      .write(':');
+                    writeReducerArrayItemCaseReturn(writer, [...propPath, key]);
+
+                    writer.write(')');
+                  } else {
+                    const currentPaths = pathsToArray.slice(0, index);
+                    writer.writeLine(
+                      `...${['state', ...currentPaths].join('.')},`
+                    );
+                    writer.write(`${pathsToArray[index]}: `);
+                  }
+                });
+              });
+            })
+            .blankLine();
+
+        case 'object':
+          return writeReducerArrayItemObjectCase(
+            writer,
+            propValue,
+            keysToArray,
+            [...propPath, key]
+          );
+
+        default:
+          break;
+      }
+    }
+  });
+}
+
 function writeReducerForObject(
   writer: CodeBlockWriter,
   object: any,
   ...prefixes: string[]
 ) {
   Object.keys(object).forEach(key => {
-    const isArray = object[key];
+    const isArray = Array.isArray(object[key]);
     const value = isArray ? object[key][0] : object[key];
 
     if (isArray) {
@@ -148,19 +243,14 @@ function writeReducerForObject(
         case 'boolean':
         case 'string':
         case 'number':
-          isArray
+          return isArray
             ? writeReducerArrayItemCase(writer, ...prefixes, key)
             : writeReducerCase(writer, ...prefixes, key);
-          break;
 
         case 'object':
-          writeReducerForObject(
-            writer,
-            value,
-            ...prefixes,
-            isArray ? singular(key) : key
-          );
-          break;
+          return isArray
+            ? writeReducerArrayItemObjectCase(writer, value, [...prefixes, key])
+            : writeReducerForObject(writer, value, ...prefixes, key);
 
         default:
           break;
