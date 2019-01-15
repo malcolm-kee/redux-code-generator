@@ -11,15 +11,14 @@ import generateData from './generate-data';
 import { getSelectorName } from './generate-selectors';
 import getWriter from './get-writer';
 
-const getReducerName = (prefix: string) =>
-  prefix ? `${prefix}Reducer` : 'rootReducer';
+const getReducerName = (prefix: string) => 'rootReducer';
 
 function writeImports(writer: CodeBlockWriter, prefix: string) {
   if (prefix) {
     writer
       .writeLine(`// ${prefix}-store.test.js`)
       .writeLine(`import * as actionCreators from './${prefix}.actions';`)
-      .writeLine(`import ${getReducerName(prefix)} from './${prefix}.reducer';`)
+      .writeLine(`import ${getReducerName(prefix)} from './root-reducer';`)
       .writeLine(`import * as selectors from './${prefix}.selectors';`);
   } else {
     writer

@@ -294,3 +294,26 @@ export const generateReducer = (storeInitialState: any, prefix = '') => {
 };
 
 export default generateReducer;
+
+export const generateRootReducer = (prefix: string) => {
+  if (!prefix) return '';
+
+  const writer = getWriter();
+
+  const reducerName = `${prefix}Reducer`;
+
+  writer
+    .writeLine(`// root-reducer.js`)
+    .writeLine(`import { combineReducers } from 'redux';`)
+    .writeLine(`import ${reducerName} from './${prefix}.reducer';`)
+    .blankLine()
+    .write(`const rootReducer = combineReducers(`)
+    .inlineBlock(() => {
+      writer.writeLine(`${prefix}: ${reducerName}`);
+    })
+    .write(');')
+    .blankLine()
+    .writeLine(`export default rootReducer;`);
+
+  return writer.toString();
+};
