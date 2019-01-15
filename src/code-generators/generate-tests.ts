@@ -1,6 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
+import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem, isBoolStrNum } from '../lib';
+import { isBoolStrNum, lastItem } from '../lib';
 import {
   getActionCreatorName,
   getAddToArrayActionCreatorName,
@@ -93,7 +94,7 @@ function writeArrayOperationTests(
         )
         .blankLine()
         .writeLine(
-          `expect(selectors.${selectorName}(finalState)).toEqual(${data})`
+          `expect(selectors.${selectorName}(finalState)).toEqual([${data}])`
         )
         .writeLine(`// assert new object is created`)
         .writeLine(`expect(finalState).not.toBe(initialState);`);
@@ -122,16 +123,16 @@ function writeArrayOperationTests(
     .blankLine()
     .write(`test('${removeFromArrayActionCreatorName}', () => `)
     .inlineBlock(() => {
-      writer.writeLine(
-        `const oriState = ${getReducerName(
-          keys[0]
-        )}(initialState, actions.${setArraysActionCreatorName}([${data}, ${secondData}]))`
-      );
       writer
-        .write(
-          `const action = actionCreators.${removeFromArrayActionCreatorName}(0);`
+        .writeLine(
+          `const oriState = ${getReducerName(
+            keys[0]
+          )}(initialState, actionCreators.${setArraysActionCreatorName}([${data}, ${secondData}]))`
         )
         .conditionalWrite(!canGenerateData, () => ` // populate data?`)
+        .writeLine(
+          `const action = actionCreators.${removeFromArrayActionCreatorName}(0);`
+        )
         .newLine()
         .writeLine(
           `const finalState = ${getReducerName(keys[0])}(oriState, action);`
@@ -150,6 +151,71 @@ function writeArrayOperationTests(
     .blankLine();
 }
 
+function writeArrayItemTest(
+  writer: CodeBlockWriter,
+  object: any,
+  keysToArray: string[],
+  pathsToProps: string[] = []
+) {
+  const pathKeys = [
+    ...keysToArray.slice(0, -1),
+    singular(lastItem(keysToArray))
+  ];
+  const valueType = typeof object;
+  if (isNil(object) || isBoolStrNum(valueType)) {
+    const actionCreatorName = getActionCreatorName([
+      ...pathKeys,
+      ...pathsToProps
+    ]);
+    const data =
+      valueType && isBoolStrNum(valueType)
+        ? generateData(
+            valueType,
+            pathsToProps.length === 0
+              ? lastItem(pathKeys)
+              : lastItem(pathsToProps)
+          )
+        : `{}`;
+    const reducerName = getReducerName(keysToArray[0]);
+    const selectorName = getSelectorName([...pathKeys, ...pathsToProps]);
+
+    writer
+      .write(`test('${actionCreatorName}', () => `)
+      .inlineBlock(() => {
+        writer
+          .write(
+            valueType
+              ? `const oriState = { ...initialState };`
+              : `const oriState = ${reducerName}(initialState, actionCreators.${getActionCreatorName(
+                  keysToArray
+                )}([{}]))`
+          )
+          .newLine()
+          .write(
+            `const action = actionCreators.${actionCreatorName}(0, ${data});`
+          )
+          .conditionalWrite(!valueType, () => ` // populate data?`)
+          .newLine()
+          .writeLine(`const finalState = ${reducerName}(oriState, action);`)
+          .blankLine()
+          .writeLine(
+            `expect(selectors.${selectorName}(finalState, 0)).toEqual(${data})`
+          )
+          .writeLine(`// assert new object is created`)
+          .writeLine(`expect(finalState).not.toBe(initialState);`);
+      })
+      .write(');')
+      .blankLine();
+  } else {
+    Object.keys(object).forEach(key => {
+      writeArrayItemTest(writer, object[key], keysToArray, [
+        ...pathsToProps,
+        key
+      ]);
+    });
+  }
+}
+
 function writeTests(
   writer: CodeBlockWriter,
   object: any,
@@ -166,9 +232,13 @@ function writeTests(
 
     if (!isNil(value)) {
       if (isBoolStrNum(valueType)) {
-        writeTest(writer, valueType, ...prefixes, key);
+        isArray
+          ? writeArrayItemTest(writer, valueType, [...prefixes, key])
+          : writeTest(writer, valueType, ...prefixes, key);
       } else {
-        writeTests(writer, value, ...prefixes, key);
+        isArray
+          ? writeArrayItemTest(writer, value, [...prefixes, key])
+          : writeTests(writer, value, ...prefixes, key);
       }
     } else {
       writeTest(writer, null, ...prefixes, key);
@@ -184,7 +254,7 @@ function writeAllTests(writer: CodeBlockWriter, object: any, prefix: string) {
     .inlineBlock(() => {
       writer
         .writeLine(
-          `const initialState = ${reducerName}(undefined, '@/Init_Store');`
+          `const initialState = ${reducerName}(undefined, { type: '@@INIT' });`
         )
         .blankLine();
 
