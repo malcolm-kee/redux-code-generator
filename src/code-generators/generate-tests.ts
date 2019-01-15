@@ -29,13 +29,10 @@ function writeImports(writer: CodeBlockWriter, prefix: string) {
   }
 }
 
-function writeTest(
-  writer: CodeBlockWriter,
-  valueType: 'string' | 'boolean' | 'number' | null,
-  ...keys: string[]
-) {
+function writeTest(writer: CodeBlockWriter, value: any, ...keys: string[]) {
+  const valueType = isBoolStrNum(typeof value);
   const actionCreatorName = getActionCreatorName(keys);
-  const data = valueType ? generateData(valueType, lastItem(keys)) : `{}`;
+  const data = generateData(value, lastItem(keys));
   const selectorName = getSelectorName(keys);
 
   writer
@@ -71,12 +68,8 @@ function writeArrayOperationTests(
   const removeFromArrayActionCreatorName = getRemoveFromArrayActionCreatorName(
     keys
   );
-  const data = canGenerateData
-    ? generateData(valueType as any, lastItem(keys))
-    : '{}';
-  const secondData = canGenerateData
-    ? generateData(valueType as any, lastItem(keys))
-    : '{}';
+  const data = generateData(value, lastItem(keys));
+  const secondData = generateData(value, lastItem(keys));
   const selectorName = getSelectorName(keys);
 
   writer
@@ -166,15 +159,10 @@ function writeArrayItemTest(
       ...pathKeys,
       ...pathsToProps
     ]);
-    const data =
-      valueType && isBoolStrNum(valueType)
-        ? generateData(
-            valueType,
-            pathsToProps.length === 0
-              ? lastItem(pathKeys)
-              : lastItem(pathsToProps)
-          )
-        : `{}`;
+    const data = generateData(
+      object,
+      pathsToProps.length === 0 ? lastItem(pathKeys) : lastItem(pathsToProps)
+    );
     const reducerName = getReducerName(keysToArray[0]);
     const selectorName = getSelectorName([...pathKeys, ...pathsToProps]);
 
@@ -233,7 +221,7 @@ function writeTests(
       if (isBoolStrNum(valueType)) {
         isArray
           ? writeArrayItemTest(writer, valueType, [...prefixes, key])
-          : writeTest(writer, valueType, ...prefixes, key);
+          : writeTest(writer, value, ...prefixes, key);
       } else {
         isArray
           ? writeArrayItemTest(writer, value, [...prefixes, key])
