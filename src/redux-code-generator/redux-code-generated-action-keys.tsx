@@ -8,23 +8,29 @@ import {
   selectReduxLanguage
 } from '../redux/redux.selectors';
 import { RootStore } from '../redux/root.type';
+import { SupportedLanguage } from '../redux/redux.type';
 
 type ReduxCodeGeneratedActionKeysProps = {
   code: string;
+  language: SupportedLanguage;
 };
 const ReduxCodeGeneratedActionKeysView: React.FunctionComponent<
   ReduxCodeGeneratedActionKeysProps
-> = ({ code }) => <CodeContainer title="Action Keys" code={code} />;
+> = ({ code, language }) => (
+  <CodeContainer title="Action Keys" code={code} language={language} />
+);
 
 const mapStates = (state: RootStore) => {
   const initialState = selectParsedInitialState(state);
+  const language = selectReduxLanguage(state);
 
   return {
+    language,
     code: initialState
       ? generateActionKeys(
           initialState,
           selectReduxCodeStorePrefix(state),
-          selectReduxLanguage(state)
+          language
         )
       : '// require valid initial state'
   };

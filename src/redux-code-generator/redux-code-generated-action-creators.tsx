@@ -11,20 +11,25 @@ import { RootStore } from '../redux/root.type';
 
 type ReduxCodeGeneratedActionCreatorsProps = {
   code: string;
+  language: string;
 };
 const ReduxCodeGeneratedActionCreatorsView: React.FunctionComponent<
   ReduxCodeGeneratedActionCreatorsProps
-> = ({ code }) => <CodeContainer title="Action Creators" code={code} />;
+> = ({ code, language }) => (
+  <CodeContainer title="Action Creators" code={code} language={language} />
+);
 
 const mapStates = (state: RootStore) => {
   const initialState = selectParsedInitialState(state);
+  const language = selectReduxLanguage(state);
 
   return {
+    language,
     code: initialState
       ? generateActionCreators(
           initialState,
           selectReduxCodeStorePrefix(state),
-          selectReduxLanguage(state)
+          language
         )
       : '// require valid initial state'
   };
