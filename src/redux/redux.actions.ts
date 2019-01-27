@@ -1,16 +1,12 @@
 import { action } from 'typesafe-actions';
-import {
-  SET_REDUX_INITIAL_STATE,
-  SET_REDUX_LANGUAGE,
-  SET_REDUX_STORE_PREFIX
-} from './redux.action-keys';
+import * as actionKeys from './redux.action-keys';
 import { SupportedLanguage } from './redux.type';
 
 export const setReduxInitialState = (initialState: string) =>
-  action(SET_REDUX_INITIAL_STATE, initialState);
+  action(actionKeys.SET_REDUX_INITIAL_STATE, initialState);
 
-export const setReduxStorePrefix = (prefix: string) =>
-  action(SET_REDUX_STORE_PREFIX, prefix);
+export const setReduxStorePrefix = (storePrefix: string) =>
+  action(actionKeys.SET_REDUX_STORE_PREFIX, storePrefix);
 
 export const setReduxLanguage = (language: SupportedLanguage) =>
-  action(SET_REDUX_LANGUAGE, language);
+  action(actionKeys.SET_REDUX_LANGUAGE, language);

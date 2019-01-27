@@ -102,6 +102,7 @@ function writeArrayActionCreator(
   const singularParam = singular(paramName);
 
   if (isJs(lang)) {
+    // write action creators in JS
     writer
       .writeLine('/**')
       .writeLine(
@@ -146,45 +147,31 @@ function writeArrayActionCreator(
       .write(');')
       .blankLine();
   } else {
+    // write action creators in TS
     writer
       .write(
         `export const ${getActionCreatorName(
           keys
-        )} = (${paramName}: ${paramType}[]) => (`
+        )} = (${paramName}: ${paramType}[]) => action(actionKeys.${getActionKey(
+          keys
+        )}, ${paramName});`
       )
-      .inlineBlock(() => {
-        writer.writeLine(`type: actionKeys.${getActionKey(keys)},`);
-        writer.writeLine(`payload: ${paramName}`);
-      })
-      .write(');')
       .blankLine()
-      .writeLine('/**')
-      .writeLine(` * @param {${paramType}} ${singularParam} `)
-      .writeLine(' */')
       .write(
         `export const ${getAddToArrayActionCreatorName(
           keys
-        )} = ${singularParam} => (`
+        )} = (${singularParam}: ${paramType}) => action(actionKeys.${getAddToArrayActionKey(
+          keys
+        )}, ${singularParam});`
       )
-      .inlineBlock(() => {
-        writer.writeLine(`type: actionKeys.${getAddToArrayActionKey(keys)},`);
-        writer.writeLine(`payload: ${singularParam}`);
-      })
-      .write(');')
       .blankLine()
-      .writeLine('/**')
-      .writeLine(` * @param {number} index `)
-      .writeLine(' */')
       .write(
-        `export const ${getRemoveFromArrayActionCreatorName(keys)} = index => (`
+        `export const ${getRemoveFromArrayActionCreatorName(
+          keys
+        )} = (index: number) => action(actionKeys.${getRemoveFromArrayActionKey(
+          keys
+        )}, index);`
       )
-      .inlineBlock(() => {
-        writer.writeLine(
-          `type: actionKeys.${getRemoveFromArrayActionKey(keys)},`
-        );
-        writer.writeLine(`payload: index`);
-      })
-      .write(');')
       .blankLine();
   }
 }
@@ -192,6 +179,7 @@ function writeArrayActionCreator(
 function writeArrayItemActionCreator(
   writer: CodeBlockWriter,
   paramType: string,
+  language: SupportedLanguage,
   ...keys: string[]
 ) {
   const actionKey = getActionKey(keys);
@@ -200,25 +188,38 @@ function writeArrayItemActionCreator(
 
   const paramName = lastItem(sanitizedKeys);
 
-  writer
-    .writeLine('/**')
-    .writeLine(` * @param {number} index `)
-    .writeLine(` * @param {${paramType}} ${paramName} `)
-    .writeLine(' */')
-    .write(
-      `export const ${getActionCreatorName(keys)} = (index, ${paramName}) => (`
-    )
-    .inlineBlock(() => {
-      writer.writeLine(`type: actionKeys.${actionKey},`);
-      writer.writeLine(`payload: { index, ${paramName} }`);
-    })
-    .write(');')
-    .blankLine();
+  if (isJs(language)) {
+    writer
+      .writeLine('/**')
+      .writeLine(` * @param {number} index `)
+      .writeLine(` * @param {${paramType}} ${paramName} `)
+      .writeLine(' */')
+      .write(
+        `export const ${getActionCreatorName(
+          keys
+        )} = (index, ${paramName}) => (`
+      )
+      .inlineBlock(() => {
+        writer.writeLine(`type: actionKeys.${actionKey},`);
+        writer.writeLine(`payload: { index, ${paramName} }`);
+      })
+      .write(');')
+      .blankLine();
+  } else {
+    writer
+      .writeLine(
+        `export const ${getActionCreatorName(
+          keys
+        )} = (index: number, ${paramName}: ${paramType}) => action(actionKeys.${actionKey}, { index, ${paramName} });`
+      )
+      .blankLine();
+  }
 }
 
 function writeObjectArrayItemActionCreator(
   writer: CodeBlockWriter,
   object: any,
+  language: SupportedLanguage,
   ...keys: string[]
 ) {
   Object.keys(object).forEach(key => {
@@ -227,10 +228,16 @@ function writeObjectArrayItemActionCreator(
 
     if (!isNil(value)) {
       isBoolStrNum(valueType)
-        ? writeArrayItemActionCreator(writer, valueType, ...keys, key)
-        : writeObjectArrayItemActionCreator(writer, value, ...keys, key);
+        ? writeArrayItemActionCreator(writer, valueType, language, ...keys, key)
+        : writeObjectArrayItemActionCreator(
+            writer,
+            value,
+            language,
+            ...keys,
+            key
+          );
     } else {
-      writeArrayItemActionCreator(writer, '*', ...keys, key);
+      writeArrayItemActionCreator(writer, 'any', language, ...keys, key);
     }
   });
 }
@@ -263,6 +270,7 @@ function writeActionCreators(
             ? writeArrayItemActionCreator(
                 writer,
                 valueType,
+                language,
                 ...prefixes,
                 singular(key)
               )
@@ -272,6 +280,7 @@ function writeActionCreators(
             ? writeObjectArrayItemActionCreator(
                 writer,
                 value,
+                language,
                 ...prefixes,
                 singular(key)
               )
