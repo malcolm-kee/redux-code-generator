@@ -4,7 +4,8 @@ import generateActionCreators from '../code-generators/generate-action-creators'
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
-  selectReduxCodeStorePrefix
+  selectReduxCodeStorePrefix,
+  selectReduxLanguage
 } from '../redux/redux.selectors';
 import { RootStore } from '../redux/root.type';
 
@@ -20,7 +21,11 @@ const mapStates = (state: RootStore) => {
 
   return {
     code: initialState
-      ? generateActionCreators(initialState, selectReduxCodeStorePrefix(state))
+      ? generateActionCreators(
+          initialState,
+          selectReduxCodeStorePrefix(state),
+          selectReduxLanguage(state)
+        )
       : '// require valid initial state'
   };
 };

@@ -1,7 +1,8 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { capitalize, lastItem, isBoolStrNum } from '../lib';
+import { capitalize, isBoolStrNum, lastItem, isJs } from '../lib';
+import { SupportedLanguage } from '../redux/redux.type';
 import {
   getActionKey,
   getAddToArrayActionKey,
@@ -30,14 +31,28 @@ export const getRemoveFromArrayActionCreatorName = (keys: string[]) => {
   return ['remove', ...finalKeys].join('');
 };
 
-function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
+function writeImportStatements(
+  writer: CodeBlockWriter,
+  prefix: string,
+  language: SupportedLanguage
+) {
+  const ext = isJs(language) ? 'js' : 'ts';
+
   if (prefix) {
     writer
-      .writeLine(`// ${prefix}.actions.js`)
+      .writeLine(`// ${prefix}.actions.${ext}`)
+      .conditionalWriteLine(
+        !isJs(language),
+        () => `import { action } from 'typesafe-actions';`
+      )
       .writeLine(`import * as actionKeys from './${prefix}.action-keys';`);
   } else {
     writer
-      .writeLine(`// actions.js`)
+      .writeLine(`// actions.${ext}`)
+      .conditionalWriteLine(
+        !isJs(language),
+        () => `import { action } from 'typesafe-actions';`
+      )
       .writeLine(`import * as actionKeys from './action-keys';`);
   }
 }
@@ -45,6 +60,7 @@ function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
 function writeActionCreator(
   writer: CodeBlockWriter,
   paramType: string,
+  lang: SupportedLanguage,
   ...keys: string[]
 ) {
   const actionKey = getActionKey(keys);
@@ -53,17 +69,25 @@ function writeActionCreator(
 
   const paramName = lastItem(sanitizedKeys);
 
-  writer
-    .writeLine('/**')
-    .writeLine(` * @param {${paramType}} ${paramName} `)
-    .writeLine(' */')
-    .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
-    .inlineBlock(() => {
-      writer.writeLine(`type: actionKeys.${actionKey},`);
-      writer.writeLine(`payload: ${paramName}`);
-    })
-    .write(');')
-    .blankLine();
+  if (isJs(lang)) {
+    writer
+      .writeLine('/**')
+      .writeLine(` * @param {${paramType}} ${paramName} `)
+      .writeLine(' */')
+      .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
+      .inlineBlock(() => {
+        writer.writeLine(`type: actionKeys.${actionKey},`);
+        writer.writeLine(`payload: ${paramName}`);
+      })
+      .write(');')
+      .blankLine();
+  } else {
+    writer.writeLine(
+      `export const ${getActionCreatorName(
+        keys
+      )} = (${paramName}: ${paramType}) => action(actionKeys.${actionKey}, ${paramName})`
+    );
+  }
 }
 
 function writeArrayActionCreator(
@@ -167,6 +191,7 @@ function writeObjectArrayItemActionCreator(
 function writeActionCreators(
   writer: CodeBlockWriter,
   object: any,
+  language: SupportedLanguage,
   ...prefixes: string[]
 ) {
   if (object) {
@@ -193,7 +218,7 @@ function writeActionCreators(
                 ...prefixes,
                 singular(key)
               )
-            : writeActionCreator(writer, valueType, ...prefixes, key);
+            : writeActionCreator(writer, valueType, language, ...prefixes, key);
         } else {
           isArray
             ? writeObjectArrayItemActionCreator(
@@ -202,23 +227,27 @@ function writeActionCreators(
                 ...prefixes,
                 singular(key)
               )
-            : writeActionCreators(writer, value, ...prefixes, key);
+            : writeActionCreators(writer, value, language, ...prefixes, key);
         }
       } else {
-        writeActionCreator(writer, '*', ...prefixes, key);
+        writeActionCreator(writer, 'any', language, ...prefixes, key);
       }
     });
   }
 }
 
-export const generateActionCreators = (storeInitialState: any, prefix = '') => {
+export const generateActionCreators = (
+  storeInitialState: any,
+  prefix = '',
+  language: SupportedLanguage
+) => {
   const writer = getWriter();
 
-  writeImportStatements(writer, prefix);
+  writeImportStatements(writer, prefix, language);
 
   writer.blankLine();
 
-  writeActionCreators(writer, storeInitialState, prefix);
+  writeActionCreators(writer, storeInitialState, language, prefix);
 
   return writer.toString();
 };
