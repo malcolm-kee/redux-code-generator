@@ -1,7 +1,12 @@
 import CodeBlockWriter from 'code-block-writer';
+import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem } from '../lib';
-import { getActionKey } from './generate-action-keys';
+import { lastItem, isBoolStrNum } from '../lib';
+import {
+  getActionKey,
+  getAddToArrayActionKey,
+  getRemoveFromArrayActionKey
+} from './generate-action-keys';
 import getWriter from './get-writer';
 
 function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
@@ -40,17 +45,183 @@ function writeReducerCaseReturn(
   });
 }
 
-function writeReducerCase(writer: CodeBlockWriter, ...keys: string[]) {
-  const ACTION_KEY = getActionKey(keys);
-
-  writer.writeLine(`case actionKeys.${ACTION_KEY}:`);
-  writer.indentBlock(() => {
-    writer.write('return ');
-
-    writeReducerCaseReturn(writer, keys.slice(1));
+function writeReducerArrayOperationCaseReturn(
+  writer: CodeBlockWriter,
+  keys: string[],
+  operation: 'add' | 'remove' | 'set',
+  depth = 0
+) {
+  writer.block(() => {
+    if (keys.length === depth + 1) {
+      const parentPaths = keys.slice(0, -1);
+      writer.writeLine(`...${['state', ...parentPaths].join('.')},`);
+      if (operation === 'add') {
+        writer.writeLine(
+          `${lastItem(keys)}: ${['state', ...keys].join(
+            '.'
+          )}.concat(action.payload)`
+        );
+      } else if (operation === 'remove') {
+        writer.writeLine(
+          `${lastItem(keys)}: ${['state', ...keys].join(
+            '.'
+          )}.filter((_, index) => index !== action.payload)`
+        );
+      } else {
+        writer.writeLine(
+          `${lastItem(keys)}: ${['state', ...keys].join(
+            '.'
+          )}.map((item, index) => index === action.payload.index ? action.payload.${singular(
+            lastItem(keys)
+          )} : item)`
+        );
+      }
+    } else {
+      const currentPaths = keys.slice(0, depth);
+      writer.writeLine(`...${['state', ...currentPaths].join('.')},`);
+      writer.write(`${keys[depth]}: `);
+      writeReducerArrayOperationCaseReturn(writer, keys, operation, depth + 1);
+    }
   });
+}
 
-  writer.blankLine();
+function writeReducerArrayItemCaseReturn(
+  writer: CodeBlockWriter,
+  propPath: string[] = [],
+  depth = 0
+) {
+  writer.block(() => {
+    if (propPath.length === depth + 1) {
+      const parentPaths = propPath.slice(0, -1);
+      writer.writeLine(`...${['item', ...parentPaths].join('.')},`);
+      writer.writeLine(
+        `${lastItem(propPath)}: action.payload.${lastItem(propPath)}`
+      );
+    } else {
+      const currentPaths = propPath.slice(0, depth);
+      writer.writeLine(`...${['item', ...currentPaths].join('.')},`);
+      writer.write(`${propPath[depth]}: `);
+      writeReducerArrayItemCaseReturn(writer, propPath, depth + 1);
+    }
+  });
+}
+
+function writeReducerCase(writer: CodeBlockWriter, ...keys: string[]) {
+  writer
+    .writeLine(`case actionKeys.${getActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return ');
+      writeReducerCaseReturn(writer, keys.slice(1)); // exclude prefix
+    })
+    .blankLine();
+}
+
+function writeReducerArrayCase(writer: CodeBlockWriter, ...keys: string[]) {
+  writer
+    .writeLine(`case actionKeys.${getActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return ');
+      writeReducerCaseReturn(writer, keys.slice(1)); // exclude prefix
+    })
+    .blankLine()
+    .writeLine(`case actionKeys.${getAddToArrayActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return');
+      writeReducerArrayOperationCaseReturn(writer, keys.slice(1), 'add');
+    })
+    .blankLine()
+    .writeLine(`case actionKeys.${getRemoveFromArrayActionKey(keys)}:`)
+    .indentBlock(() => {
+      writer.write('return');
+      writeReducerArrayOperationCaseReturn(writer, keys.slice(1), 'remove');
+    })
+    .blankLine();
+}
+
+function writeReducerArrayItemCase(writer: CodeBlockWriter, ...keys: string[]) {
+  writer
+    .writeLine(
+      `case actionKeys.${getActionKey([
+        ...keys.slice(0, -1),
+        singular(lastItem(keys))
+      ])}:`
+    )
+    .indentBlock(() => {
+      writer.write('return ');
+      writeReducerArrayOperationCaseReturn(writer, keys.slice(1), 'set'); // exclude prefix
+    })
+    .blankLine();
+}
+
+function writeReducerArrayItemDescendantCase(
+  writer: CodeBlockWriter,
+  keysToArray: string[],
+  propPath: string[]
+) {
+  const pathsToArray = keysToArray.slice(1);
+
+  writer
+    .writeLine(
+      `case actionKeys.${getActionKey([
+        ...keysToArray.slice(0, -1),
+        singular(lastItem(keysToArray)),
+        ...propPath
+      ])}:`
+    )
+    .indentBlock(() => {
+      writer.write('return ').block(() => {
+        pathsToArray.forEach((_, index) => {
+          if (pathsToArray.length === index + 1) {
+            const parentPaths = pathsToArray.slice(0, -1);
+            writer
+              .writeLine(`...${['state', ...parentPaths].join('.')},`)
+              .writeLine(
+                `${lastItem(pathsToArray)}: ${['state', ...pathsToArray].join(
+                  '.'
+                )}.map((item, index) => index !== action.payload.index`
+              )
+              .writeLine(`? item`)
+              .write(':');
+            writeReducerArrayItemCaseReturn(writer, propPath);
+
+            writer.write(')');
+          } else {
+            const currentPaths = pathsToArray.slice(0, index);
+            writer.writeLine(`...${['state', ...currentPaths].join('.')},`);
+            writer.write(`${pathsToArray[index]}: `);
+          }
+        });
+      });
+    })
+    .blankLine();
+}
+
+function writeReducerArrayItemObjectCase(
+  writer: CodeBlockWriter,
+  value: any,
+  keysToArray: string[],
+  propPath: string[] = []
+) {
+  Object.keys(value).forEach(key => {
+    const propValue = value[key];
+
+    if (!isNil(propValue)) {
+      isBoolStrNum(typeof propValue)
+        ? writeReducerArrayItemDescendantCase(writer, keysToArray, [
+            ...propPath,
+            key
+          ])
+        : writeReducerArrayItemObjectCase(writer, propValue, keysToArray, [
+            ...propPath,
+            key
+          ]);
+    } else {
+      writeReducerArrayItemDescendantCase(writer, keysToArray, [
+        ...propPath,
+        key
+      ]);
+    }
+  });
 }
 
 function writeReducerForObject(
@@ -59,22 +230,22 @@ function writeReducerForObject(
   ...prefixes: string[]
 ) {
   Object.keys(object).forEach(key => {
-    const value = object[key];
+    const isArray = Array.isArray(object[key]);
+    const value = isArray ? object[key][0] : object[key];
+
+    if (isArray) {
+      writeReducerArrayCase(writer, ...prefixes, key);
+    }
 
     if (!isNil(value)) {
-      switch (typeof value) {
-        case 'boolean':
-        case 'string':
-        case 'number':
-          writeReducerCase(writer, ...prefixes, key);
-          break;
-
-        case 'object':
-          writeReducerForObject(writer, value, ...prefixes, key);
-          break;
-
-        default:
-          break;
+      if (isBoolStrNum(typeof value)) {
+        isArray
+          ? writeReducerArrayItemCase(writer, ...prefixes, key)
+          : writeReducerCase(writer, ...prefixes, key);
+      } else {
+        isArray
+          ? writeReducerArrayItemObjectCase(writer, value, [...prefixes, key])
+          : writeReducerForObject(writer, value, ...prefixes, key);
       }
     } else {
       writeReducerCase(writer, ...prefixes, key);
@@ -123,3 +294,26 @@ export const generateReducer = (storeInitialState: any, prefix = '') => {
 };
 
 export default generateReducer;
+
+export const generateRootReducer = (prefix: string) => {
+  if (!prefix) return '';
+
+  const writer = getWriter();
+
+  const reducerName = `${prefix}Reducer`;
+
+  writer
+    .writeLine(`// root-reducer.js`)
+    .writeLine(`import { combineReducers } from 'redux';`)
+    .writeLine(`import ${reducerName} from './${prefix}.reducer';`)
+    .blankLine()
+    .write(`const rootReducer = combineReducers(`)
+    .inlineBlock(() => {
+      writer.writeLine(`${prefix}: ${reducerName}`);
+    })
+    .write(');')
+    .blankLine()
+    .writeLine(`export default rootReducer;`);
+
+  return writer.toString();
+};

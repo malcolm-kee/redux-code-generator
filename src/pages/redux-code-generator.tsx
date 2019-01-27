@@ -7,6 +7,7 @@ import { ReduxCodeGeneratedActionKeys } from '../redux-code-generator/redux-code
 import { ReduxCodeGeneratedReducer } from '../redux-code-generator/redux-code-generated-reducer';
 import { ReduxCodeGeneratedSelectors } from '../redux-code-generator/redux-code-generated-selectors';
 import { ReduxCodeGeneratedTests } from '../redux-code-generator/redux-code-generated-tests';
+import { ReduxCodeGeneratedRootReducer } from '../redux-code-generator/redux-code-generated-root-reducer';
 
 export const ReduxCodeGenerator = () => (
   <div>
@@ -22,6 +23,7 @@ export const ReduxCodeGenerator = () => (
           <ReduxCodeGeneratedActionKeys />
           <ReduxCodeGeneratedActionCreators />
           <ReduxCodeGeneratedReducer />
+          <ReduxCodeGeneratedRootReducer />
           <ReduxCodeGeneratedSelectors />
           <ReduxCodeGeneratedTests />
         </div>
