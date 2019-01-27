@@ -21,6 +21,16 @@ const styles: React.CSSProperties = {
   fontFamily: "Consolas, 'Courier New', monospace"
 };
 
+const packageLink = (
+  <a
+    href="https://www.npmjs.com/package/typesafe-actions"
+    target="_BLANK"
+    rel="noopener noreferrer"
+  >
+    <code>typesafe-action</code>
+  </a>
+);
+
 type ReduxCodeFormProps = {
   initialState: string;
   storePrefix: string;
@@ -65,17 +75,7 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
             onChangeValue={setLanguage as any}
             helpText={
               language === 'typescript' && (
-                <span>
-                  Requires{' '}
-                  <a
-                    href="https://www.npmjs.com/package/typesafe-actions"
-                    target="_BLANK"
-                    rel="noopener noreferrer"
-                  >
-                    <code>typesafe-action</code>
-                  </a>{' '}
-                  package
-                </span>
+                <span>Requires {packageLink} package</span>
               )
             }
           >
