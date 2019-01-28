@@ -6,34 +6,31 @@ import getWriter from './get-writer';
 export const getStoreTypeName = (prefix: string) =>
   prefix ? `${capitalize(prefix)}Store` : 'RootStore';
 
-function writeType(writer: CodeBlockWriter, object: any) {
-  if (object) {
-    writer.inlineBlock(() => {
-      Object.keys(object).forEach(key => {
-        const isArray = Array.isArray(object[key]);
+function writeType(writer: CodeBlockWriter, object: any, name: string = '') {
+  const isArray = Array.isArray(object);
+  const value = isArray ? object[0] : object;
+  const valType = typeof value;
 
-        const value = isArray ? object[key][0] : object[key];
-        const valType = typeof value;
-
-        if (isNil(value)) {
-          writer.writeLine(`readonly ${key}: ${isArray ? 'any[]' : 'any'};`);
-        } else if (isBoolStrNum(valType)) {
-          writer.writeLine(
-            `readonly ${key}: ${isArray ? `${valType}[]` : valType};`
+  if (isNil(value)) {
+    writer.writeLine(`readonly ${name}: ${isArray ? 'any[]' : 'any'};`);
+  } else if (isBoolStrNum(valType)) {
+    writer.writeLine(
+      `readonly ${name}: ${isArray ? `${valType}[]` : valType};`
+    );
+  } else {
+    if (isArray) {
+      writer.write(`readonly ${name}: Array<`);
+      writeType(writer, value);
+      writer.write('>;');
+    } else {
+      writer
+        .conditionalWrite(!!name, () => `readonly ${name}: `)
+        .inlineBlock(() => {
+          Object.keys(object).forEach(key =>
+            writeType(writer, object[key], key)
           );
-        } else {
-          if (isArray) {
-            writer.write(`readonly ${key}: Array<`);
-            writeType(writer, value);
-            writer.write('>;');
-          } else {
-            writer.write(`readonly ${key}: `).inlineBlock(() => {
-              writeType(writer, value);
-            });
-          }
-        }
-      });
-    });
+        });
+    }
   }
 }
 
