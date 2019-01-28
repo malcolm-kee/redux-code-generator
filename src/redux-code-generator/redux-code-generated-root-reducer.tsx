@@ -4,7 +4,8 @@ import { generateRootReducer } from '../code-generators/generate-reducer';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
-  selectReduxCodeStorePrefix
+  selectReduxCodeStorePrefix,
+  selectReduxLanguage
 } from '../redux/redux.selectors';
 import { RootStore } from '../redux/root.type';
 
@@ -25,7 +26,10 @@ const mapStates = (state: RootStore) => {
     hasPrefix: !!prefix,
     code:
       initialState && prefix
-        ? generateRootReducer(selectReduxCodeStorePrefix(state))
+        ? generateRootReducer(
+            selectReduxCodeStorePrefix(state),
+            selectReduxLanguage(state)
+          )
         : '// require valid initial state'
   };
 };
