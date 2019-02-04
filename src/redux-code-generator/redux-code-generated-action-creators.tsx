@@ -7,7 +7,7 @@ import {
   selectReduxCodeStorePrefix,
   selectReduxLanguage
 } from '../redux/redux.selectors';
-import { RootStore } from '../redux/root.type';
+import { IRootStore } from '../redux/root.type';
 
 type ReduxCodeGeneratedActionCreatorsProps = {
   code: string;
@@ -19,7 +19,7 @@ const ReduxCodeGeneratedActionCreatorsView: React.FunctionComponent<
   <CodeContainer title="Action Creators" code={code} language={language} />
 );
 
-const mapStates = (state: RootStore) => {
+const mapStates = (state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
   const language = selectReduxLanguage(state);
 

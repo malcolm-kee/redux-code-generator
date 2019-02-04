@@ -1,4 +1,4 @@
-import { RootStore } from './root.type';
+import { IRootStore } from './root.type';
 
 const parseJson = (jsonString: string) => {
   try {
@@ -8,16 +8,16 @@ const parseJson = (jsonString: string) => {
   }
 };
 
-const selectReduxCodeStore = (state: RootStore) => state.redux;
+const selectReduxCodeStore = (state: IRootStore) => state.redux;
 
-export const selectReduxCodeInitialState = (state: RootStore) =>
+export const selectReduxCodeInitialState = (state: IRootStore) =>
   selectReduxCodeStore(state).initialState;
 
-export const selectParsedInitialState = (state: RootStore) =>
+export const selectParsedInitialState = (state: IRootStore) =>
   parseJson(selectReduxCodeInitialState(state));
 
-export const selectReduxCodeStorePrefix = (state: RootStore) =>
+export const selectReduxCodeStorePrefix = (state: IRootStore) =>
   selectReduxCodeStore(state).storePrefix;
 
-export const selectReduxLanguage = (state: RootStore) =>
+export const selectReduxLanguage = (state: IRootStore) =>
   selectReduxCodeStore(state).language;

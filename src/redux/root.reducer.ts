@@ -1,7 +1,7 @@
 import { combineReducers } from 'redux';
 import { reduxCodeReducer } from './redux.reducer';
-import { RootStore } from './root.type';
+import { IRootStore } from './root.type';
 
-export const rootReducer = combineReducers<RootStore>({
+export const rootReducer = combineReducers<IRootStore>({
   redux: reduxCodeReducer
 });

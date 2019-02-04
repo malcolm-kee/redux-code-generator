@@ -15,7 +15,7 @@ import {
   selectReduxLanguage
 } from '../redux/redux.selectors';
 import { SupportedLanguage } from '../redux/redux.type';
-import { RootStore } from '../redux/root.type';
+import { IRootStore } from '../redux/root.type';
 
 const styles: React.CSSProperties = {
   fontFamily: "Consolas, 'Courier New', monospace"
@@ -88,7 +88,7 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
   </Section>
 );
 
-const mapStates = (state: RootStore) => ({
+const mapStates = (state: IRootStore) => ({
   initialState: selectReduxCodeInitialState(state),
   storePrefix: selectReduxCodeStorePrefix(state),
   language: selectReduxLanguage(state)

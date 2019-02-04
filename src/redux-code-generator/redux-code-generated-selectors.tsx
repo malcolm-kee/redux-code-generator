@@ -8,7 +8,7 @@ import {
   selectReduxLanguage
 } from '../redux/redux.selectors';
 import { SupportedLanguage } from '../redux/redux.type';
-import { RootStore } from '../redux/root.type';
+import { IRootStore } from '../redux/root.type';
 
 type ReduxCodeGeneratedSelectorsProps = {
   code: string;
@@ -20,7 +20,7 @@ const ReduxCodeGeneratedSelectorsView: React.FunctionComponent<
   <CodeContainer title="Selectors" code={code} language={language} />
 );
 
-const mapStates = (state: RootStore) => {
+const mapStates = (state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
   const language = selectReduxLanguage(state);
 

@@ -7,7 +7,7 @@ import {
   selectReduxCodeStorePrefix,
   selectReduxLanguage
 } from '../redux/redux.selectors';
-import { RootStore } from '../redux/root.type';
+import { IRootStore } from '../redux/root.type';
 
 type ReduxCodeGeneratedRootReducerProps = {
   code: string;
@@ -18,7 +18,7 @@ const ReduxCodeGeneratedRootReducerView: React.FunctionComponent<
 > = ({ code, hasPrefix }) =>
   hasPrefix ? <CodeContainer title="Root Reducer" code={code} /> : null;
 
-const mapStates = (state: RootStore) => {
+const mapStates = (state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
   const prefix = selectReduxCodeStorePrefix(state);
 
