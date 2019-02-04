@@ -1,5 +1,5 @@
 import { ReduxCodeStore } from './redux.type';
 
-export interface RootStore {
+export interface IRootStore {
   redux: ReduxCodeStore;
 }

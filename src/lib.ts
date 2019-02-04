@@ -1,3 +1,5 @@
+import { SupportedLanguage } from './redux/redux.type';
+
 export const callAll = <Params extends Array<any>>(
   ...fns: Array<((...params: Params) => void) | undefined | boolean>
 ) => (...params: Params) =>
@@ -18,3 +20,5 @@ export const isBoolStrNum = (
   type: string
 ): type is 'boolean' | 'string' | 'number' =>
   type === 'boolean' || type === 'string' || type === 'number';
+
+export const isJs = (lang: SupportedLanguage) => lang === 'javascript';

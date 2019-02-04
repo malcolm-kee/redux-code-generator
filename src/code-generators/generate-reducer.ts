@@ -1,27 +1,65 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem, isBoolStrNum } from '../lib';
+import { lastItem, isBoolStrNum, isJs, capitalize } from '../lib';
 import {
   getActionKey,
   getAddToArrayActionKey,
   getRemoveFromArrayActionKey
 } from './generate-action-keys';
 import getWriter from './get-writer';
+import { SupportedLanguage } from '../redux/redux.type';
+import { getStoreTypeName } from './generate-type';
 
-function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
-  if (prefix) {
-    writer.writeLine(`// ${prefix}.reducer.js`);
-    writer.writeLine(`import * as actionKeys from './${prefix}.action-keys';`);
-  } else {
-    writer.writeLine(`// root-reducer.js`);
-    writer.writeLine(`import * as actionKeys from './action-keys';`);
-  }
+function writeImportStatements(
+  writer: CodeBlockWriter,
+  prefix: string,
+  lang: SupportedLanguage
+) {
+  const isTs = !isJs(lang);
+  const ext = isTs ? 'ts' : 'js';
+
+  writer
+    .writeLine(
+      prefix ? `// ${prefix}.reducer.${ext}` : `// root-reducer.${ext}`
+    )
+    .conditionalWriteLine(
+      isTs,
+      () => `import { ActionType } from 'typesafe-actions';`
+    )
+    .writeLine(
+      prefix
+        ? `import * as actionKeys from './${prefix}.action-keys';`
+        : `import * as actionKeys from './action-keys';`
+    )
+    .conditionalWriteLine(
+      isTs,
+      () =>
+        `import * as actions from './${
+          prefix ? `${prefix}.actions` : 'actions'
+        }';`
+    )
+    .conditionalWriteLine(
+      isTs,
+      () =>
+        `import { ${getStoreTypeName(prefix)} } from './${
+          prefix ? `${prefix}.type` : `type`
+        }';`
+    );
 }
 
-function writeDefaultState(writer: CodeBlockWriter, initialState: any) {
+function writeDefaultState(
+  writer: CodeBlockWriter,
+  initialState: any,
+  lang: SupportedLanguage,
+  prefix: string
+) {
   writer
-    .write(`const DEFAULT_STATE = `)
+    .write(
+      isJs(lang)
+        ? `const DEFAULT_STATE = `
+        : `const DEFAULT_STATE: ${getStoreTypeName(prefix)} = `
+    )
     .write(JSON.stringify(initialState, null, 2))
     .write(';');
 }
@@ -255,13 +293,28 @@ function writeReducerForObject(
 
 function writeReducer(
   writer: CodeBlockWriter,
+  lang: SupportedLanguage,
   initialState: any,
   prefix: string
 ) {
+  const isTs = !isJs(lang);
   const reducerFnName = prefix ? `${prefix}Reducer` : 'rootReducer';
+  const actionTypeName = `${capitalize(prefix)}Action`;
+
+  if (isTs) {
+    writer
+      .writeLine(`type ${actionTypeName} = ActionType<typeof actions>;`)
+      .blankLine();
+  }
 
   writer
-    .write(`export const ${reducerFnName} = (state = DEFAULT_STATE, action) =>`)
+    .write(
+      isTs
+        ? `export const ${reducerFnName} = (state = DEFAULT_STATE, action: ${actionTypeName}): ${getStoreTypeName(
+            prefix
+          )} =>`
+        : `export const ${reducerFnName} = (state = DEFAULT_STATE, action) =>`
+    )
     .block(() => {
       writer.writeLine(`switch (action.type)`).block(() => {
         writeReducerForObject(writer, initialState, prefix);
@@ -277,37 +330,54 @@ function writeReducer(
   writer.writeLine(`export default ${reducerFnName};`);
 }
 
-export const generateReducer = (storeInitialState: any, prefix = '') => {
+export const generateReducer = (
+  storeInitialState: any,
+  prefix = '',
+  lang: SupportedLanguage
+) => {
   const writer = getWriter();
 
-  writeImportStatements(writer, prefix);
+  writeImportStatements(writer, prefix, lang);
 
   writer.blankLine();
 
-  writeDefaultState(writer, storeInitialState);
+  writeDefaultState(writer, storeInitialState, lang, prefix);
 
   writer.blankLine();
 
-  writeReducer(writer, storeInitialState, prefix);
+  writeReducer(writer, lang, storeInitialState, prefix);
 
   return writer.toString();
 };
 
 export default generateReducer;
 
-export const generateRootReducer = (prefix: string) => {
+export const generateRootReducer = (
+  prefix: string,
+  lang: SupportedLanguage
+) => {
   if (!prefix) return '';
 
   const writer = getWriter();
 
   const reducerName = `${prefix}Reducer`;
+  const isTs = !isJs(lang);
+  const ext = isTs ? 'ts' : 'js';
 
   writer
-    .writeLine(`// root-reducer.js`)
+    .writeLine(`// root-reducer.${ext}`)
     .writeLine(`import { combineReducers } from 'redux';`)
+    .conditionalWriteLine(
+      isTs,
+      () => `import { IRootStore } from './root.type';`
+    )
     .writeLine(`import ${reducerName} from './${prefix}.reducer';`)
     .blankLine()
-    .write(`const rootReducer = combineReducers(`)
+    .write(
+      isTs
+        ? `const rootReducer = combineReducers<IRootStore>(`
+        : `const rootReducer = combineReducers(`
+    )
     .inlineBlock(() => {
       writer.writeLine(`${prefix}: ${reducerName}`);
     })

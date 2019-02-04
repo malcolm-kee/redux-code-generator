@@ -1,7 +1,8 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem, upperCase, isBoolStrNum } from '../lib';
+import { isBoolStrNum, lastItem, upperCase, isJs } from '../lib';
+import { SupportedLanguage } from '../redux/redux.type';
 import getWriter from './get-writer';
 
 const splitKeyWords = (words: string[]) =>
@@ -78,12 +79,15 @@ function writeActionKeysForObject(
 
 export const generateActionKeys = (
   storeInitialState: any,
-  prefix: string = ''
+  prefix: string = '',
+  language: SupportedLanguage
 ) => {
   const writer = getWriter();
 
+  const ext = isJs(language) ? 'js' : 'ts';
+
   writer.writeLine(
-    prefix ? `// ${prefix}.action-keys.js` : `// action-keys.js`
+    prefix ? `// ${prefix}.action-keys.${ext}` : `// action-keys.${ext}`
   );
 
   writeActionKeysForObject(writer, storeInitialState, prefix);

@@ -1,7 +1,8 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { isBoolStrNum, lastItem } from '../lib';
+import { isBoolStrNum, lastItem, isJs } from '../lib';
+import { SupportedLanguage } from '../redux/redux.type';
 import {
   getActionCreatorName,
   getAddToArrayActionCreatorName,
@@ -13,16 +14,22 @@ import getWriter from './get-writer';
 
 const getReducerName = (prefix: string) => 'rootReducer';
 
-function writeImports(writer: CodeBlockWriter, prefix: string) {
+function writeImports(
+  writer: CodeBlockWriter,
+  lang: SupportedLanguage,
+  prefix: string
+) {
+  const ext = isJs(lang) ? 'js' : 'ts';
+
   if (prefix) {
     writer
-      .writeLine(`// ${prefix}-store.test.js`)
+      .writeLine(`// ${prefix}-store.test.${ext}`)
       .writeLine(`import * as actionCreators from './${prefix}.actions';`)
       .writeLine(`import ${getReducerName(prefix)} from './root-reducer';`)
       .writeLine(`import * as selectors from './${prefix}.selectors';`);
   } else {
     writer
-      .writeLine(`// store.test.js`)
+      .writeLine(`// store.test.${ext}`)
       .writeLine(`import * as actionCreators from './actions';`)
       .writeLine(`import ${getReducerName(prefix)} from './root-reducer';`)
       .writeLine(`import * as selectors from './selectors';`);
@@ -250,10 +257,14 @@ function writeAllTests(writer: CodeBlockWriter, object: any, prefix: string) {
     .write(');');
 }
 
-const generateTests = (storeInitialState: any, prefix = '') => {
+const generateTests = (
+  storeInitialState: any,
+  prefix = '',
+  lang: SupportedLanguage
+) => {
   const writer = getWriter();
 
-  writeImports(writer, prefix);
+  writeImports(writer, lang, prefix);
 
   writer.blankLine();
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import generateSelectors from '../code-generators/generate-selectors';
+import generateType from '../code-generators/generate-type';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
@@ -10,15 +10,16 @@ import {
 import { SupportedLanguage } from '../redux/redux.type';
 import { IRootStore } from '../redux/root.type';
 
-type ReduxCodeGeneratedSelectorsProps = {
+type ReduxCodeGeneratedActionCreatorsProps = {
   code: string;
   language: SupportedLanguage;
 };
-const ReduxCodeGeneratedSelectorsView: React.FunctionComponent<
-  ReduxCodeGeneratedSelectorsProps
-> = ({ code, language }) => (
-  <CodeContainer title="Selectors" code={code} language={language} />
-);
+const ReduxCodeGeneratedTypeView: React.FunctionComponent<
+  ReduxCodeGeneratedActionCreatorsProps
+> = ({ code, language }) =>
+  language === 'typescript' ? (
+    <CodeContainer title="Types" code={code} language={language} />
+  ) : null;
 
 const mapStates = (state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
@@ -27,15 +28,11 @@ const mapStates = (state: IRootStore) => {
   return {
     language,
     code: initialState
-      ? generateSelectors(
-          initialState,
-          selectReduxCodeStorePrefix(state),
-          language
-        )
+      ? generateType(initialState, selectReduxCodeStorePrefix(state))
       : '// require valid initial state'
   };
 };
 
-export const ReduxCodeGeneratedSelectors = connect(mapStates)(
-  ReduxCodeGeneratedSelectorsView
+export const ReduxCodeGeneratedType = connect(mapStates)(
+  ReduxCodeGeneratedTypeView
 );

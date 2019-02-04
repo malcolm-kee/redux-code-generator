@@ -9,7 +9,7 @@ type CodeSnippetProps = {
 };
 export const CodeSnippet: React.FunctionComponent<CodeSnippetProps> = ({
   code,
-  language = 'jsx'
+  language = 'javascript'
 }) => (
   <Highlight {...defaultProps} code={code} language={language}>
     {({ className, style, tokens, getLineProps, getTokenProps }: any) => (

@@ -1,7 +1,8 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { capitalize, lastItem, isBoolStrNum } from '../lib';
+import { capitalize, isBoolStrNum, lastItem, isJs } from '../lib';
+import { SupportedLanguage } from '../redux/redux.type';
 import {
   getActionKey,
   getAddToArrayActionKey,
@@ -30,14 +31,28 @@ export const getRemoveFromArrayActionCreatorName = (keys: string[]) => {
   return ['remove', ...finalKeys].join('');
 };
 
-function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
+function writeImportStatements(
+  writer: CodeBlockWriter,
+  prefix: string,
+  language: SupportedLanguage
+) {
+  const ext = isJs(language) ? 'js' : 'ts';
+
   if (prefix) {
     writer
-      .writeLine(`// ${prefix}.actions.js`)
+      .writeLine(`// ${prefix}.actions.${ext}`)
+      .conditionalWriteLine(
+        !isJs(language),
+        () => `import { action } from 'typesafe-actions';`
+      )
       .writeLine(`import * as actionKeys from './${prefix}.action-keys';`);
   } else {
     writer
-      .writeLine(`// actions.js`)
+      .writeLine(`// actions.${ext}`)
+      .conditionalWriteLine(
+        !isJs(language),
+        () => `import { action } from 'typesafe-actions';`
+      )
       .writeLine(`import * as actionKeys from './action-keys';`);
   }
 }
@@ -45,6 +60,7 @@ function writeImportStatements(writer: CodeBlockWriter, prefix: string) {
 function writeActionCreator(
   writer: CodeBlockWriter,
   paramType: string,
+  lang: SupportedLanguage,
   ...keys: string[]
 ) {
   const actionKey = getActionKey(keys);
@@ -53,74 +69,117 @@ function writeActionCreator(
 
   const paramName = lastItem(sanitizedKeys);
 
-  writer
-    .writeLine('/**')
-    .writeLine(` * @param {${paramType}} ${paramName} `)
-    .writeLine(' */')
-    .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
-    .inlineBlock(() => {
-      writer.writeLine(`type: actionKeys.${actionKey},`);
-      writer.writeLine(`payload: ${paramName}`);
-    })
-    .write(');')
-    .blankLine();
+  if (isJs(lang)) {
+    writer
+      .writeLine('/**')
+      .writeLine(` * @param {${paramType}} ${paramName} `)
+      .writeLine(' */')
+      .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
+      .inlineBlock(() => {
+        writer.writeLine(`type: actionKeys.${actionKey},`);
+        writer.writeLine(`payload: ${paramName}`);
+      })
+      .write(');')
+      .blankLine();
+  } else {
+    writer
+      .writeLine(
+        `export const ${getActionCreatorName(
+          keys
+        )} = (${paramName}: ${paramType}) => action(actionKeys.${actionKey}, ${paramName})`
+      )
+      .blankLine();
+  }
 }
 
 function writeArrayActionCreator(
   writer: CodeBlockWriter,
   paramType: string,
+  lang: SupportedLanguage,
   ...keys: string[]
 ) {
   const paramName = lastItem(keys);
   const singularParam = singular(paramName);
-  writer
-    .writeLine('/**')
-    .writeLine(
-      ` * @param {${
-        paramType === '*' ? 'Array' : `${paramType}[]`
-      }} ${paramName} `
-    )
-    .writeLine(' */')
-    .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
-    .inlineBlock(() => {
-      writer.writeLine(`type: actionKeys.${getActionKey(keys)},`);
-      writer.writeLine(`payload: ${paramName}`);
-    })
-    .write(');')
-    .blankLine()
-    .writeLine('/**')
-    .writeLine(` * @param {${paramType}} ${singularParam} `)
-    .writeLine(' */')
-    .write(
-      `export const ${getAddToArrayActionCreatorName(
-        keys
-      )} = ${singularParam} => (`
-    )
-    .inlineBlock(() => {
-      writer.writeLine(`type: actionKeys.${getAddToArrayActionKey(keys)},`);
-      writer.writeLine(`payload: ${singularParam}`);
-    })
-    .write(');')
-    .blankLine()
-    .writeLine('/**')
-    .writeLine(` * @param {number} index `)
-    .writeLine(' */')
-    .write(
-      `export const ${getRemoveFromArrayActionCreatorName(keys)} = index => (`
-    )
-    .inlineBlock(() => {
-      writer.writeLine(
-        `type: actionKeys.${getRemoveFromArrayActionKey(keys)},`
-      );
-      writer.writeLine(`payload: index`);
-    })
-    .write(');')
-    .blankLine();
+
+  if (isJs(lang)) {
+    // write action creators in JS
+    writer
+      .writeLine('/**')
+      .writeLine(
+        ` * @param {${
+          paramType === 'any' ? 'Array' : `${paramType}[]`
+        }} ${paramName} `
+      )
+      .writeLine(' */')
+      .write(`export const ${getActionCreatorName(keys)} = ${paramName} => (`)
+      .inlineBlock(() => {
+        writer.writeLine(`type: actionKeys.${getActionKey(keys)},`);
+        writer.writeLine(`payload: ${paramName}`);
+      })
+      .write(');')
+      .blankLine()
+      .writeLine('/**')
+      .writeLine(` * @param {${paramType}} ${singularParam} `)
+      .writeLine(' */')
+      .write(
+        `export const ${getAddToArrayActionCreatorName(
+          keys
+        )} = ${singularParam} => (`
+      )
+      .inlineBlock(() => {
+        writer.writeLine(`type: actionKeys.${getAddToArrayActionKey(keys)},`);
+        writer.writeLine(`payload: ${singularParam}`);
+      })
+      .write(');')
+      .blankLine()
+      .writeLine('/**')
+      .writeLine(` * @param {number} index `)
+      .writeLine(' */')
+      .write(
+        `export const ${getRemoveFromArrayActionCreatorName(keys)} = index => (`
+      )
+      .inlineBlock(() => {
+        writer.writeLine(
+          `type: actionKeys.${getRemoveFromArrayActionKey(keys)},`
+        );
+        writer.writeLine(`payload: index`);
+      })
+      .write(');')
+      .blankLine();
+  } else {
+    // write action creators in TS
+    writer
+      .write(
+        `export const ${getActionCreatorName(
+          keys
+        )} = (${paramName}: ${paramType}[]) => action(actionKeys.${getActionKey(
+          keys
+        )}, ${paramName});`
+      )
+      .blankLine()
+      .write(
+        `export const ${getAddToArrayActionCreatorName(
+          keys
+        )} = (${singularParam}: ${paramType}) => action(actionKeys.${getAddToArrayActionKey(
+          keys
+        )}, ${singularParam});`
+      )
+      .blankLine()
+      .write(
+        `export const ${getRemoveFromArrayActionCreatorName(
+          keys
+        )} = (index: number) => action(actionKeys.${getRemoveFromArrayActionKey(
+          keys
+        )}, index);`
+      )
+      .blankLine();
+  }
 }
 
 function writeArrayItemActionCreator(
   writer: CodeBlockWriter,
   paramType: string,
+  language: SupportedLanguage,
   ...keys: string[]
 ) {
   const actionKey = getActionKey(keys);
@@ -129,25 +188,38 @@ function writeArrayItemActionCreator(
 
   const paramName = lastItem(sanitizedKeys);
 
-  writer
-    .writeLine('/**')
-    .writeLine(` * @param {number} index `)
-    .writeLine(` * @param {${paramType}} ${paramName} `)
-    .writeLine(' */')
-    .write(
-      `export const ${getActionCreatorName(keys)} = (index, ${paramName}) => (`
-    )
-    .inlineBlock(() => {
-      writer.writeLine(`type: actionKeys.${actionKey},`);
-      writer.writeLine(`payload: { index, ${paramName} }`);
-    })
-    .write(');')
-    .blankLine();
+  if (isJs(language)) {
+    writer
+      .writeLine('/**')
+      .writeLine(` * @param {number} index `)
+      .writeLine(` * @param {${paramType}} ${paramName} `)
+      .writeLine(' */')
+      .write(
+        `export const ${getActionCreatorName(
+          keys
+        )} = (index, ${paramName}) => (`
+      )
+      .inlineBlock(() => {
+        writer.writeLine(`type: actionKeys.${actionKey},`);
+        writer.writeLine(`payload: { index, ${paramName} }`);
+      })
+      .write(');')
+      .blankLine();
+  } else {
+    writer
+      .writeLine(
+        `export const ${getActionCreatorName(
+          keys
+        )} = (index: number, ${paramName}: ${paramType}) => action(actionKeys.${actionKey}, { index, ${paramName} });`
+      )
+      .blankLine();
+  }
 }
 
 function writeObjectArrayItemActionCreator(
   writer: CodeBlockWriter,
   object: any,
+  language: SupportedLanguage,
   ...keys: string[]
 ) {
   Object.keys(object).forEach(key => {
@@ -156,10 +228,16 @@ function writeObjectArrayItemActionCreator(
 
     if (!isNil(value)) {
       isBoolStrNum(valueType)
-        ? writeArrayItemActionCreator(writer, valueType, ...keys, key)
-        : writeObjectArrayItemActionCreator(writer, value, ...keys, key);
+        ? writeArrayItemActionCreator(writer, valueType, language, ...keys, key)
+        : writeObjectArrayItemActionCreator(
+            writer,
+            value,
+            language,
+            ...keys,
+            key
+          );
     } else {
-      writeArrayItemActionCreator(writer, '*', ...keys, key);
+      writeArrayItemActionCreator(writer, 'any', language, ...keys, key);
     }
   });
 }
@@ -167,6 +245,7 @@ function writeObjectArrayItemActionCreator(
 function writeActionCreators(
   writer: CodeBlockWriter,
   object: any,
+  language: SupportedLanguage,
   ...prefixes: string[]
 ) {
   if (object) {
@@ -178,7 +257,8 @@ function writeActionCreators(
       if (isArray) {
         writeArrayActionCreator(
           writer,
-          isNil(value) || valueType === 'object' ? '*' : valueType,
+          isNil(value) || valueType === 'object' ? 'any' : valueType,
+          language,
           ...prefixes,
           key
         );
@@ -190,35 +270,41 @@ function writeActionCreators(
             ? writeArrayItemActionCreator(
                 writer,
                 valueType,
+                language,
                 ...prefixes,
                 singular(key)
               )
-            : writeActionCreator(writer, valueType, ...prefixes, key);
+            : writeActionCreator(writer, valueType, language, ...prefixes, key);
         } else {
           isArray
             ? writeObjectArrayItemActionCreator(
                 writer,
                 value,
+                language,
                 ...prefixes,
                 singular(key)
               )
-            : writeActionCreators(writer, value, ...prefixes, key);
+            : writeActionCreators(writer, value, language, ...prefixes, key);
         }
       } else {
-        writeActionCreator(writer, '*', ...prefixes, key);
+        writeActionCreator(writer, 'any', language, ...prefixes, key);
       }
     });
   }
 }
 
-export const generateActionCreators = (storeInitialState: any, prefix = '') => {
+export const generateActionCreators = (
+  storeInitialState: any,
+  prefix = '',
+  language: SupportedLanguage
+) => {
   const writer = getWriter();
 
-  writeImportStatements(writer, prefix);
+  writeImportStatements(writer, prefix, language);
 
   writer.blankLine();
 
-  writeActionCreators(writer, storeInitialState, prefix);
+  writeActionCreators(writer, storeInitialState, language, prefix);
 
   return writer.toString();
 };
