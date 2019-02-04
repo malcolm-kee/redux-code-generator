@@ -4,23 +4,30 @@ import generateTests from '../code-generators/generate-tests';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
-  selectReduxCodeStorePrefix
+  selectReduxCodeStorePrefix,
+  selectReduxLanguage
 } from '../redux/redux.selectors';
 import { RootStore } from '../redux/root.type';
+import { SupportedLanguage } from '../redux/redux.type';
 
 type ReduxCodeGeneratedTestsProps = {
   code: string;
+  lang: SupportedLanguage;
 };
 const ReduxCodeGeneratedTestsView: React.FunctionComponent<
   ReduxCodeGeneratedTestsProps
-> = ({ code }) => <CodeContainer title="Tests" code={code} />;
+> = ({ code, lang }) => (
+  <CodeContainer title="Tests" code={code} language={lang} />
+);
 
 const mapStates = (state: RootStore) => {
   const initialState = selectParsedInitialState(state);
+  const lang = selectReduxLanguage(state);
 
   return {
+    lang,
     code: initialState
-      ? generateTests(initialState, selectReduxCodeStorePrefix(state))
+      ? generateTests(initialState, selectReduxCodeStorePrefix(state), lang)
       : '// require valid initial state'
   };
 };
