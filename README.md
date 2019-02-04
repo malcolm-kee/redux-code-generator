@@ -24,15 +24,13 @@ This is a web application that takes your reducer default state as input, and pr
 
 1. Enter your initial state json into the "Initial State" text field. All the code will be generated!
 1. If you would like to prefix your store/actions/reducer, use the "Store Prefix" field.
+1. Select your application language (Javascript/Typescript). (Note: Typescript requires [typesafe-actions] package)
 
 ## Limitations
 
 1. It is assumed that the initial state is a plain object (not array).
 1. It is fine to have array in your state, but this application could not handle another array as descendent of array. (It is bad practice to have such redux store anyway).
-
-## Future Enhancement (WIP)
-
-- Typescript support
-- Test framework other than Jest
+1. Unit tests only support Jest
 
 [site]: https://redux-code-generator.netlify.com/
+[typesafe-actions]: https://www.npmjs.com/package/typesafe-actions
