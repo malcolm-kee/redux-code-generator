@@ -4,23 +4,34 @@ import generateSelectors from '../code-generators/generate-selectors';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
-  selectReduxCodeStorePrefix
+  selectReduxCodeStorePrefix,
+  selectReduxLanguage
 } from '../redux/redux.selectors';
+import { SupportedLanguage } from '../redux/redux.type';
 import { RootStore } from '../redux/root.type';
 
 type ReduxCodeGeneratedSelectorsProps = {
   code: string;
+  language: SupportedLanguage;
 };
 const ReduxCodeGeneratedSelectorsView: React.FunctionComponent<
   ReduxCodeGeneratedSelectorsProps
-> = ({ code }) => <CodeContainer title="Selectors" code={code} />;
+> = ({ code, language }) => (
+  <CodeContainer title="Selectors" code={code} language={language} />
+);
 
 const mapStates = (state: RootStore) => {
   const initialState = selectParsedInitialState(state);
+  const language = selectReduxLanguage(state);
 
   return {
+    language,
     code: initialState
-      ? generateSelectors(initialState, selectReduxCodeStorePrefix(state))
+      ? generateSelectors(
+          initialState,
+          selectReduxCodeStorePrefix(state),
+          language
+        )
       : '// require valid initial state'
   };
 };

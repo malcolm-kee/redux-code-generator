@@ -1,8 +1,9 @@
 import CodeBlockWriter from 'code-block-writer';
-import { isNil } from 'typesafe-is';
-import { capitalize, lastItem, isBoolStrNum } from '../lib';
-import getWriter from './get-writer';
 import { singular } from 'pluralize';
+import { isNil } from 'typesafe-is';
+import { capitalize, isBoolStrNum, isJs, lastItem } from '../lib';
+import { SupportedLanguage } from '../redux/redux.type';
+import getWriter from './get-writer';
 
 const getBaseSelectorName = (prefix: string) =>
   prefix ? `select${capitalize(prefix)}State` : 'selectState';
@@ -10,24 +11,36 @@ const getBaseSelectorName = (prefix: string) =>
 export const getSelectorName = (keys: string[]) =>
   ['select', ...keys.filter(Boolean).map(capitalize)].join('');
 
-function writeBaseSelector(writer: CodeBlockWriter, prefix: string) {
+function writeBaseSelector(
+  writer: CodeBlockWriter,
+  prefix: string,
+  lang: SupportedLanguage
+) {
+  const isTs = !isJs(lang);
+
   writer
     .writeLine(`// get the state of this store`)
     .writeLine(
       prefix
-        ? `const ${getBaseSelectorName(prefix)} = state => state.${prefix};`
-        : `const ${getBaseSelectorName(prefix)} = state => state;`
+        ? `const ${getBaseSelectorName(prefix)} = ${
+            isTs ? '(state: IRootStore)' : 'state'
+          } => state.${prefix};`
+        : `const ${getBaseSelectorName(prefix)} = ${
+            isTs ? '(state: IRootStore)' : 'state'
+          } => state;`
     );
 }
 
 function writeSelector(
   writer: CodeBlockWriter,
+  lang: SupportedLanguage,
   returnType: string | null,
   ...keys: string[]
 ) {
   const paths = keys.slice(1);
+  const isTs = !isJs(lang);
 
-  if (returnType) {
+  if (returnType && !isTs) {
     writer
       .writeLine('/**')
       .writeLine(` * @returns {${returnType}}`)
@@ -36,22 +49,24 @@ function writeSelector(
 
   writer
     .writeLine(
-      `export const ${getSelectorName(keys)} = state => ${getBaseSelectorName(
-        keys[0]
-      )}(state).${paths.join('.')};`
+      `export const ${getSelectorName(keys)} = ${
+        isTs ? '(state: IRootStore)' : 'state'
+      } => ${getBaseSelectorName(keys[0])}(state).${paths.join('.')};`
     )
     .blankLine();
 }
 
 function writeArraySelector(
   writer: CodeBlockWriter,
+  lang: SupportedLanguage,
   returnType: string | null,
   keysToArray: string[],
   pathsToProps: string[] = []
 ) {
   const pathsToArray = keysToArray.slice(1);
+  const isTs = !isJs(lang);
 
-  if (returnType) {
+  if (returnType && !isTs) {
     writer
       .writeLine('/**')
       .writeLine(` * @returns {${returnType}}`)
@@ -64,9 +79,11 @@ function writeArraySelector(
         ...keysToArray.slice(0, -1),
         singular(lastItem(keysToArray)),
         ...pathsToProps
-      ])} = (state, index) => ${getBaseSelectorName(
-        keysToArray[0]
-      )}(state).${pathsToArray.join('.')}[index]${
+      ])} = ${
+        isTs ? '(state: IRootStore, index: number)' : '(state, index)'
+      } => ${getBaseSelectorName(keysToArray[0])}(state).${pathsToArray.join(
+        '.'
+      )}[index]${
         pathsToProps.length === 0 ? '' : `.${pathsToProps.join('.')}`
       };`
     )
@@ -75,6 +92,7 @@ function writeArraySelector(
 
 function writeArrayDescendentSelector(
   writer: CodeBlockWriter,
+  lang: SupportedLanguage,
   object: any,
   keysToArray: string[],
   pathsToProps: string[] = []
@@ -85,22 +103,26 @@ function writeArrayDescendentSelector(
 
     if (!isNil(value)) {
       isBoolStrNum(valueType)
-        ? writeArraySelector(writer, valueType, keysToArray, [
+        ? writeArraySelector(writer, lang, valueType, keysToArray, [
             ...pathsToProps,
             key
           ])
-        : writeArrayDescendentSelector(writer, value, keysToArray, [
+        : writeArrayDescendentSelector(writer, lang, value, keysToArray, [
             ...pathsToProps,
             key
           ]);
     } else {
-      writeArraySelector(writer, null, keysToArray, [...pathsToProps, key]);
+      writeArraySelector(writer, lang, null, keysToArray, [
+        ...pathsToProps,
+        key
+      ]);
     }
   });
 }
 
 function writeSelectors(
   writer: CodeBlockWriter,
+  lang: SupportedLanguage,
   object: any,
   ...prefix: string[]
 ) {
@@ -114,38 +136,51 @@ function writeSelectors(
         const arrayType =
           !isNil(value) && valueType !== 'object' ? `${valueType}[]` : null;
 
-        writeSelector(writer, arrayType, ...prefix, key);
+        writeSelector(writer, lang, arrayType, ...prefix, key);
       }
 
       if (!isNil(value)) {
         if (isBoolStrNum(valueType)) {
           isArray
-            ? writeArraySelector(writer, valueType, [...prefix, key])
-            : writeSelector(writer, valueType, ...prefix, key);
+            ? writeArraySelector(writer, lang, valueType, [...prefix, key])
+            : writeSelector(writer, lang, valueType, ...prefix, key);
         } else {
           isArray
-            ? writeArrayDescendentSelector(writer, value, [...prefix, key])
-            : writeSelectors(writer, value, ...prefix, key);
+            ? writeArrayDescendentSelector(writer, lang, value, [
+                ...prefix,
+                key
+              ])
+            : writeSelectors(writer, lang, value, ...prefix, key);
         }
       } else {
-        writeSelector(writer, null, ...prefix, key);
+        writeSelector(writer, lang, null, ...prefix, key);
       }
     });
   }
 }
 
-export const generateSelectors = (storeInitialState: any, prefix = '') => {
+export const generateSelectors = (
+  storeInitialState: any,
+  prefix = '',
+  lang: SupportedLanguage
+) => {
   const writer = getWriter();
 
+  const ext = isJs(lang) ? 'js' : 'ts';
+
   writer
-    .writeLine(prefix ? `// ${prefix}.selectors.js` : '// selectors.js')
+    .writeLine(prefix ? `// ${prefix}.selectors.${ext}` : `// selectors.${ext}`)
+    .conditionalWriteLine(
+      !isJs(lang),
+      () => `import { IRootStore } from './root.type';`
+    )
     .blankLine();
 
-  writeBaseSelector(writer, prefix);
+  writeBaseSelector(writer, prefix, lang);
 
   writer.blankLine();
 
-  writeSelectors(writer, storeInitialState, prefix);
+  writeSelectors(writer, lang, storeInitialState, prefix);
 
   return writer.toString();
 };

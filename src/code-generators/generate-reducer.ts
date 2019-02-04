@@ -1,7 +1,7 @@
 import CodeBlockWriter from 'code-block-writer';
 import { singular } from 'pluralize';
 import { isNil } from 'typesafe-is';
-import { lastItem, isBoolStrNum, isJs } from '../lib';
+import { lastItem, isBoolStrNum, isJs, capitalize } from '../lib';
 import {
   getActionKey,
   getAddToArrayActionKey,
@@ -51,10 +51,15 @@ function writeImportStatements(
 function writeDefaultState(
   writer: CodeBlockWriter,
   initialState: any,
-  lang: SupportedLanguage
+  lang: SupportedLanguage,
+  prefix: string
 ) {
   writer
-    .write(`const DEFAULT_STATE = `)
+    .write(
+      isJs(lang)
+        ? `const DEFAULT_STATE = `
+        : `const DEFAULT_STATE: ${getStoreTypeName(prefix)} = `
+    )
     .write(JSON.stringify(initialState, null, 2))
     .write(';');
 }
@@ -288,13 +293,28 @@ function writeReducerForObject(
 
 function writeReducer(
   writer: CodeBlockWriter,
+  lang: SupportedLanguage,
   initialState: any,
   prefix: string
 ) {
+  const isTs = !isJs(lang);
   const reducerFnName = prefix ? `${prefix}Reducer` : 'rootReducer';
+  const actionTypeName = `${capitalize(prefix)}Action`;
+
+  if (isTs) {
+    writer
+      .writeLine(`type ${actionTypeName} = ActionType<typeof actions>;`)
+      .blankLine();
+  }
 
   writer
-    .write(`export const ${reducerFnName} = (state = DEFAULT_STATE, action) =>`)
+    .write(
+      isTs
+        ? `export const ${reducerFnName} = (state = DEFAULT_STATE, action: ${actionTypeName}): ${getStoreTypeName(
+            prefix
+          )} =>`
+        : `export const ${reducerFnName} = (state = DEFAULT_STATE, action) =>`
+    )
     .block(() => {
       writer.writeLine(`switch (action.type)`).block(() => {
         writeReducerForObject(writer, initialState, prefix);
@@ -321,11 +341,11 @@ export const generateReducer = (
 
   writer.blankLine();
 
-  writeDefaultState(writer, storeInitialState, lang);
+  writeDefaultState(writer, storeInitialState, lang, prefix);
 
   writer.blankLine();
 
-  writeReducer(writer, storeInitialState, prefix);
+  writeReducer(writer, lang, storeInitialState, prefix);
 
   return writer.toString();
 };
@@ -341,14 +361,23 @@ export const generateRootReducer = (
   const writer = getWriter();
 
   const reducerName = `${prefix}Reducer`;
-  const ext = isJs(lang) ? 'js' : 'ts';
+  const isTs = !isJs(lang);
+  const ext = isTs ? 'ts' : 'js';
 
   writer
     .writeLine(`// root-reducer.${ext}`)
     .writeLine(`import { combineReducers } from 'redux';`)
+    .conditionalWriteLine(
+      isTs,
+      () => `import { IRootStore } from './root.type';`
+    )
     .writeLine(`import ${reducerName} from './${prefix}.reducer';`)
     .blankLine()
-    .write(`const rootReducer = combineReducers(`)
+    .write(
+      isTs
+        ? `const rootReducer = combineReducers<IRootStore>(`
+        : `const rootReducer = combineReducers(`
+    )
     .inlineBlock(() => {
       writer.writeLine(`${prefix}: ${reducerName}`);
     })
