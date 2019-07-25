@@ -2,6 +2,7 @@ import { IRootStore } from './root.type';
 
 const parseJson = (jsonString: string) => {
   try {
+     // eslint-disable-next-line
     return JSON.parse(JSON.stringify(eval(`(${jsonString})`)));
   } catch (e) {
     return null;
