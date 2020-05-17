@@ -1,0 +1,852 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`action creators value 1`] = `
+<div
+  hidden=""
+  id="action-creators"
+>
+  // actions.js
+import * as actionKeys from './action-keys';
+
+/**
+ * @param {string} name 
+ */
+export const setName = name =&gt; ({
+    type: actionKeys.SET_NAME,
+    payload: name
+});
+
+/**
+ * @param {boolean} isLoading 
+ */
+export const setIsLoading = isLoading =&gt; ({
+    type: actionKeys.SET_IS_LOADING,
+    payload: isLoading
+});
+
+/**
+ * @param {string} email 
+ */
+export const setCustomerEmail = email =&gt; ({
+    type: actionKeys.SET_CUSTOMER_EMAIL,
+    payload: email
+});
+
+/**
+ * @param {number} age 
+ */
+export const setCustomerAge = age =&gt; ({
+    type: actionKeys.SET_CUSTOMER_AGE,
+    payload: age
+});
+
+/**
+ * @param {any} info 
+ */
+export const setCustomerInfo = info =&gt; ({
+    type: actionKeys.SET_CUSTOMER_INFO,
+    payload: info
+});
+
+/**
+ * @param {any} data 
+ */
+export const setData = data =&gt; ({
+    type: actionKeys.SET_DATA,
+    payload: data
+});
+
+/**
+ * @param {string[]} friendNames 
+ */
+export const setFriendNames = friendNames =&gt; ({
+    type: actionKeys.SET_FRIEND_NAMES,
+    payload: friendNames
+});
+
+/**
+ * @param {string} friendName 
+ */
+export const addFriendName = friendName =&gt; ({
+    type: actionKeys.ADD_FRIEND_NAME,
+    payload: friendName
+});
+
+/**
+ * @param {number} index 
+ */
+export const removeFriendName = index =&gt; ({
+    type: actionKeys.REMOVE_FRIEND_NAME,
+    payload: index
+});
+
+/**
+ * @param {number} index 
+ * @param {string} friendName 
+ */
+export const setFriendName = (index, friendName) =&gt; ({
+    type: actionKeys.SET_FRIEND_NAME,
+    payload: { index, friendName }
+});
+
+/**
+ * @param {Array} connections 
+ */
+export const setConnections = connections =&gt; ({
+    type: actionKeys.SET_CONNECTIONS,
+    payload: connections
+});
+
+/**
+ * @param {any} connection 
+ */
+export const addConnection = connection =&gt; ({
+    type: actionKeys.ADD_CONNECTION,
+    payload: connection
+});
+
+/**
+ * @param {number} index 
+ */
+export const removeConnection = index =&gt; ({
+    type: actionKeys.REMOVE_CONNECTION,
+    payload: index
+});
+
+/**
+ * @param {number} index 
+ * @param {string} type 
+ */
+export const setConnectionType = (index, type) =&gt; ({
+    type: actionKeys.SET_CONNECTION_TYPE,
+    payload: { index, type }
+});
+
+/**
+ * @param {number} index 
+ * @param {string} man 
+ */
+export const setConnectionConMan = (index, man) =&gt; ({
+    type: actionKeys.SET_CONNECTION_CON_MAN,
+    payload: { index, man }
+});
+
+/**
+ * @param {number} index 
+ * @param {any} data 
+ */
+export const setConnectionConData = (index, data) =&gt; ({
+    type: actionKeys.SET_CONNECTION_CON_DATA,
+    payload: { index, data }
+});
+
+
+</div>
+`;
+
+exports[`action creators value 2`] = `
+<div
+  hidden=""
+  id="action-creators"
+>
+  // actions.ts
+import { action } from 'typesafe-actions';
+import * as actionKeys from './action-keys';
+
+export const setName = (name: string) =&gt; action(actionKeys.SET_NAME, name)
+
+export const setIsLoading = (isLoading: boolean) =&gt; action(actionKeys.SET_IS_LOADING, isLoading)
+
+export const setCustomerEmail = (email: string) =&gt; action(actionKeys.SET_CUSTOMER_EMAIL, email)
+
+export const setCustomerAge = (age: number) =&gt; action(actionKeys.SET_CUSTOMER_AGE, age)
+
+export const setCustomerInfo = (info: any) =&gt; action(actionKeys.SET_CUSTOMER_INFO, info)
+
+export const setData = (data: any) =&gt; action(actionKeys.SET_DATA, data)
+
+export const setFriendNames = (friendNames: string[]) =&gt; action(actionKeys.SET_FRIEND_NAMES, friendNames);
+
+export const addFriendName = (friendName: string) =&gt; action(actionKeys.ADD_FRIEND_NAME, friendName);
+
+export const removeFriendName = (index: number) =&gt; action(actionKeys.REMOVE_FRIEND_NAME, index);
+
+export const setFriendName = (index: number, friendName: string) =&gt; action(actionKeys.SET_FRIEND_NAME, { index, friendName });
+
+export const setConnections = (connections: any[]) =&gt; action(actionKeys.SET_CONNECTIONS, connections);
+
+export const addConnection = (connection: any) =&gt; action(actionKeys.ADD_CONNECTION, connection);
+
+export const removeConnection = (index: number) =&gt; action(actionKeys.REMOVE_CONNECTION, index);
+
+export const setConnectionType = (index: number, type: string) =&gt; action(actionKeys.SET_CONNECTION_TYPE, { index, type });
+
+export const setConnectionConMan = (index: number, man: string) =&gt; action(actionKeys.SET_CONNECTION_CON_MAN, { index, man });
+
+export const setConnectionConData = (index: number, data: any) =&gt; action(actionKeys.SET_CONNECTION_CON_DATA, { index, data });
+
+
+</div>
+`;
+
+exports[`action keys value 1`] = `
+<div
+  hidden=""
+  id="action-keys"
+>
+  // action-keys.js
+export const SET_NAME = 'SET_NAME';
+export const SET_IS_LOADING = 'SET_IS_LOADING';
+export const SET_CUSTOMER_EMAIL = 'SET_CUSTOMER_EMAIL';
+export const SET_CUSTOMER_AGE = 'SET_CUSTOMER_AGE';
+export const SET_CUSTOMER_INFO = 'SET_CUSTOMER_INFO';
+export const SET_DATA = 'SET_DATA';
+export const SET_FRIEND_NAMES = 'SET_FRIEND_NAMES';
+export const ADD_FRIEND_NAME = 'ADD_FRIEND_NAME';
+export const REMOVE_FRIEND_NAME = 'REMOVE_FRIEND_NAME';
+export const SET_FRIEND_NAME = 'SET_FRIEND_NAME';
+export const SET_CONNECTIONS = 'SET_CONNECTIONS';
+export const ADD_CONNECTION = 'ADD_CONNECTION';
+export const REMOVE_CONNECTION = 'REMOVE_CONNECTION';
+export const SET_CONNECTION_TYPE = 'SET_CONNECTION_TYPE';
+export const SET_CONNECTION_CON_MAN = 'SET_CONNECTION_CON_MAN';
+export const SET_CONNECTION_CON_DATA = 'SET_CONNECTION_CON_DATA';
+
+</div>
+`;
+
+exports[`action keys value 2`] = `
+<div
+  hidden=""
+  id="action-keys"
+>
+  // action-keys.ts
+export const SET_NAME = 'SET_NAME';
+export const SET_IS_LOADING = 'SET_IS_LOADING';
+export const SET_CUSTOMER_EMAIL = 'SET_CUSTOMER_EMAIL';
+export const SET_CUSTOMER_AGE = 'SET_CUSTOMER_AGE';
+export const SET_CUSTOMER_INFO = 'SET_CUSTOMER_INFO';
+export const SET_DATA = 'SET_DATA';
+export const SET_FRIEND_NAMES = 'SET_FRIEND_NAMES';
+export const ADD_FRIEND_NAME = 'ADD_FRIEND_NAME';
+export const REMOVE_FRIEND_NAME = 'REMOVE_FRIEND_NAME';
+export const SET_FRIEND_NAME = 'SET_FRIEND_NAME';
+export const SET_CONNECTIONS = 'SET_CONNECTIONS';
+export const ADD_CONNECTION = 'ADD_CONNECTION';
+export const REMOVE_CONNECTION = 'REMOVE_CONNECTION';
+export const SET_CONNECTION_TYPE = 'SET_CONNECTION_TYPE';
+export const SET_CONNECTION_CON_MAN = 'SET_CONNECTION_CON_MAN';
+export const SET_CONNECTION_CON_DATA = 'SET_CONNECTION_CON_DATA';
+
+</div>
+`;
+
+exports[`reducer value 1`] = `
+<div
+  hidden=""
+  id="reducer"
+>
+  // root-reducer.js
+import * as actionKeys from './action-keys';
+
+const DEFAULT_STATE = {
+  "name": "",
+  "isLoading": true,
+  "customer": {
+    "email": "",
+    "age": 21,
+    "info": null
+  },
+  "data": null,
+  "friendNames": [
+    ""
+  ],
+  "connections": [
+    {
+      "type": "colleague",
+      "con": {
+        "man": "Malcolm",
+        "data": null
+      }
+    }
+  ]
+};
+
+export const rootReducer = (state = DEFAULT_STATE, action) =&gt; {
+    switch (action.type)
+    {
+        case actionKeys.SET_NAME:
+            return {
+                ...state,
+                name: action.payload
+            }
+
+        case actionKeys.SET_IS_LOADING:
+            return {
+                ...state,
+                isLoading: action.payload
+            }
+
+        case actionKeys.SET_CUSTOMER_EMAIL:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    email: action.payload
+                }
+            }
+
+        case actionKeys.SET_CUSTOMER_AGE:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    age: action.payload
+                }
+            }
+
+        case actionKeys.SET_CUSTOMER_INFO:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    info: action.payload
+                }
+            }
+
+        case actionKeys.SET_DATA:
+            return {
+                ...state,
+                data: action.payload
+            }
+
+        case actionKeys.SET_FRIEND_NAMES:
+            return {
+                ...state,
+                friendNames: action.payload
+            }
+
+        case actionKeys.ADD_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.concat(action.payload)
+            }
+
+        case actionKeys.REMOVE_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.filter((_, index) =&gt; index !== action.payload)
+            }
+
+        case actionKeys.SET_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.map((item, index) =&gt; index === action.payload.index ? action.payload.friendName : item)
+            }
+
+        case actionKeys.SET_CONNECTIONS:
+            return {
+                ...state,
+                connections: action.payload
+            }
+
+        case actionKeys.ADD_CONNECTION:
+            return {
+                ...state,
+                connections: state.connections.concat(action.payload)
+            }
+
+        case actionKeys.REMOVE_CONNECTION:
+            return {
+                ...state,
+                connections: state.connections.filter((_, index) =&gt; index !== action.payload)
+            }
+
+        case actionKeys.SET_CONNECTION_TYPE:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    type: action.payload.type
+                }
+                )
+            }
+
+        case actionKeys.SET_CONNECTION_CON_MAN:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    con: {
+                        ...item.con,
+                        man: action.payload.man
+                    }
+                }
+                )
+            }
+
+        case actionKeys.SET_CONNECTION_CON_DATA:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    con: {
+                        ...item.con,
+                        data: action.payload.data
+                    }
+                }
+                )
+            }
+
+        default:
+            return state;
+    }
+}
+
+export default rootReducer;
+
+</div>
+`;
+
+exports[`reducer value 2`] = `
+<div
+  hidden=""
+  id="reducer"
+>
+  // root-reducer.ts
+import { ActionType } from 'typesafe-actions';
+import * as actionKeys from './action-keys';
+import * as actions from './actions';
+import { RootStore } from './type';
+
+const DEFAULT_STATE: RootStore = {
+  "name": "",
+  "isLoading": true,
+  "customer": {
+    "email": "",
+    "age": 21,
+    "info": null
+  },
+  "data": null,
+  "friendNames": [
+    ""
+  ],
+  "connections": [
+    {
+      "type": "colleague",
+      "con": {
+        "man": "Malcolm",
+        "data": null
+      }
+    }
+  ]
+};
+
+type Action = ActionType&lt;typeof actions&gt;;
+
+export const rootReducer = (state = DEFAULT_STATE, action: Action): RootStore =&gt; {
+    switch (action.type)
+    {
+        case actionKeys.SET_NAME:
+            return {
+                ...state,
+                name: action.payload
+            }
+
+        case actionKeys.SET_IS_LOADING:
+            return {
+                ...state,
+                isLoading: action.payload
+            }
+
+        case actionKeys.SET_CUSTOMER_EMAIL:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    email: action.payload
+                }
+            }
+
+        case actionKeys.SET_CUSTOMER_AGE:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    age: action.payload
+                }
+            }
+
+        case actionKeys.SET_CUSTOMER_INFO:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    info: action.payload
+                }
+            }
+
+        case actionKeys.SET_DATA:
+            return {
+                ...state,
+                data: action.payload
+            }
+
+        case actionKeys.SET_FRIEND_NAMES:
+            return {
+                ...state,
+                friendNames: action.payload
+            }
+
+        case actionKeys.ADD_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.concat(action.payload)
+            }
+
+        case actionKeys.REMOVE_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.filter((_, index) =&gt; index !== action.payload)
+            }
+
+        case actionKeys.SET_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.map((item, index) =&gt; index === action.payload.index ? action.payload.friendName : item)
+            }
+
+        case actionKeys.SET_CONNECTIONS:
+            return {
+                ...state,
+                connections: action.payload
+            }
+
+        case actionKeys.ADD_CONNECTION:
+            return {
+                ...state,
+                connections: state.connections.concat(action.payload)
+            }
+
+        case actionKeys.REMOVE_CONNECTION:
+            return {
+                ...state,
+                connections: state.connections.filter((_, index) =&gt; index !== action.payload)
+            }
+
+        case actionKeys.SET_CONNECTION_TYPE:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    type: action.payload.type
+                }
+                )
+            }
+
+        case actionKeys.SET_CONNECTION_CON_MAN:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    con: {
+                        ...item.con,
+                        man: action.payload.man
+                    }
+                }
+                )
+            }
+
+        case actionKeys.SET_CONNECTION_CON_DATA:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    con: {
+                        ...item.con,
+                        data: action.payload.data
+                    }
+                }
+                )
+            }
+
+        default:
+            return state;
+    }
+}
+
+export default rootReducer;
+
+</div>
+`;
+
+exports[`reducer value 3`] = `
+<div
+  hidden=""
+  id="reducer"
+>
+  // main.reducer.ts
+import { ActionType } from 'typesafe-actions';
+import * as actionKeys from './main.action-keys';
+import * as actions from './main.actions';
+import { MainStore } from './main.type';
+
+const DEFAULT_STATE: MainStore = {
+  "name": "",
+  "isLoading": true,
+  "customer": {
+    "email": "",
+    "age": 21,
+    "info": null
+  },
+  "data": null,
+  "friendNames": [
+    ""
+  ],
+  "connections": [
+    {
+      "type": "colleague",
+      "con": {
+        "man": "Malcolm",
+        "data": null
+      }
+    }
+  ]
+};
+
+type MainAction = ActionType&lt;typeof actions&gt;;
+
+export const mainReducer = (state = DEFAULT_STATE, action: MainAction): MainStore =&gt; {
+    switch (action.type)
+    {
+        case actionKeys.SET_MAIN_NAME:
+            return {
+                ...state,
+                name: action.payload
+            }
+
+        case actionKeys.SET_MAIN_IS_LOADING:
+            return {
+                ...state,
+                isLoading: action.payload
+            }
+
+        case actionKeys.SET_MAIN_CUSTOMER_EMAIL:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    email: action.payload
+                }
+            }
+
+        case actionKeys.SET_MAIN_CUSTOMER_AGE:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    age: action.payload
+                }
+            }
+
+        case actionKeys.SET_MAIN_CUSTOMER_INFO:
+            return {
+                ...state,
+                customer: {
+                    ...state.customer,
+                    info: action.payload
+                }
+            }
+
+        case actionKeys.SET_MAIN_DATA:
+            return {
+                ...state,
+                data: action.payload
+            }
+
+        case actionKeys.SET_MAIN_FRIEND_NAMES:
+            return {
+                ...state,
+                friendNames: action.payload
+            }
+
+        case actionKeys.ADD_MAIN_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.concat(action.payload)
+            }
+
+        case actionKeys.REMOVE_MAIN_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.filter((_, index) =&gt; index !== action.payload)
+            }
+
+        case actionKeys.SET_MAIN_FRIEND_NAME:
+            return {
+                ...state,
+                friendNames: state.friendNames.map((item, index) =&gt; index === action.payload.index ? action.payload.friendName : item)
+            }
+
+        case actionKeys.SET_MAIN_CONNECTIONS:
+            return {
+                ...state,
+                connections: action.payload
+            }
+
+        case actionKeys.ADD_MAIN_CONNECTION:
+            return {
+                ...state,
+                connections: state.connections.concat(action.payload)
+            }
+
+        case actionKeys.REMOVE_MAIN_CONNECTION:
+            return {
+                ...state,
+                connections: state.connections.filter((_, index) =&gt; index !== action.payload)
+            }
+
+        case actionKeys.SET_MAIN_CONNECTION_TYPE:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    type: action.payload.type
+                }
+                )
+            }
+
+        case actionKeys.SET_MAIN_CONNECTION_CON_MAN:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    con: {
+                        ...item.con,
+                        man: action.payload.man
+                    }
+                }
+                )
+            }
+
+        case actionKeys.SET_MAIN_CONNECTION_CON_DATA:
+            return {
+                ...state,
+                connections: state.connections.map((item, index) =&gt; index !== action.payload.index
+                ? item
+                : {
+                    ...item,
+                    con: {
+                        ...item.con,
+                        data: action.payload.data
+                    }
+                }
+                )
+            }
+
+        default:
+            return state;
+    }
+}
+
+export default mainReducer;
+
+</div>
+`;
+
+exports[`reducer value 4`] = `
+<div
+  hidden=""
+  id="root-reducer"
+>
+  // root-reducer.ts
+import { combineReducers } from 'redux';
+import { IRootStore } from './root.type';
+import mainReducer from './main.reducer';
+
+const rootReducer = combineReducers&lt;IRootStore&gt;({
+    main: mainReducer
+});
+
+export default rootReducer;
+
+</div>
+`;
+
+exports[`selectors initial value 1`] = `
+<div
+  hidden=""
+  id="selectors"
+>
+  // selectors.js
+
+// get the state of this store
+const selectState = state =&gt; state;
+
+/**
+ * @returns {string}
+ */
+export const selectName = state =&gt; selectState(state).name;
+
+/**
+ * @returns {boolean}
+ */
+export const selectIsLoading = state =&gt; selectState(state).isLoading;
+
+/**
+ * @returns {string}
+ */
+export const selectCustomerEmail = state =&gt; selectState(state).customer.email;
+
+/**
+ * @returns {number}
+ */
+export const selectCustomerAge = state =&gt; selectState(state).customer.age;
+
+export const selectCustomerInfo = state =&gt; selectState(state).customer.info;
+
+export const selectData = state =&gt; selectState(state).data;
+
+/**
+ * @returns {string[]}
+ */
+export const selectFriendNames = state =&gt; selectState(state).friendNames;
+
+/**
+ * @returns {string}
+ */
+export const selectFriendName = (state, index) =&gt; selectState(state).friendNames[index];
+
+export const selectConnections = state =&gt; selectState(state).connections;
+
+/**
+ * @returns {string}
+ */
+export const selectConnectionType = (state, index) =&gt; selectState(state).connections[index].type;
+
+/**
+ * @returns {string}
+ */
+export const selectConnectionConMan = (state, index) =&gt; selectState(state).connections[index].con.man;
+
+export const selectConnectionConData = (state, index) =&gt; selectState(state).connections[index].con.data;
+
+
+</div>
+`;

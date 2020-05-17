@@ -1,27 +1,23 @@
 import * as React from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import generateType from '../code-generators/generate-type';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
   selectReduxCodeStorePrefix,
-  selectReduxLanguage
+  selectReduxLanguage,
 } from '../redux/redux.selectors';
-import { SupportedLanguage } from '../redux/redux.type';
 import { IRootStore } from '../redux/root.type';
 
-type ReduxCodeGeneratedActionCreatorsProps = {
-  code: string;
-  language: SupportedLanguage;
-};
-const ReduxCodeGeneratedTypeView: React.FunctionComponent<
-  ReduxCodeGeneratedActionCreatorsProps
-> = ({ code, language }) =>
+const ReduxCodeGeneratedTypeView = ({
+  code,
+  language,
+}: ConnectedProps<typeof connector>) =>
   language === 'typescript' ? (
-    <CodeContainer title="Types" code={code} language={language} />
+    <CodeContainer title="Types" code={code} language={language} id="types" />
   ) : null;
 
-const mapStates = (state: IRootStore) => {
+const connector = connect((state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
   const language = selectReduxLanguage(state);
 
@@ -29,10 +25,8 @@ const mapStates = (state: IRootStore) => {
     language,
     code: initialState
       ? generateType(initialState, selectReduxCodeStorePrefix(state))
-      : '// require valid initial state'
+      : '// require valid initial state',
   };
-};
+});
 
-export const ReduxCodeGeneratedType = connect(mapStates)(
-  ReduxCodeGeneratedTypeView
-);
+export const ReduxCodeGeneratedType = connector(ReduxCodeGeneratedTypeView);

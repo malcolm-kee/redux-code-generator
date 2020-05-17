@@ -1,14 +1,10 @@
-import React from 'react';
+import * as React from 'react';
 import { ReduxCodeGenerator } from './pages/redux-code-generator';
 
-export class App extends React.Component {
-  render() {
-    return (
-      <div className="App">
-        <ReduxCodeGenerator />
-      </div>
-    );
-  }
-}
-
-export default App;
+export const App = () => {
+  return (
+    <div className="App">
+      <ReduxCodeGenerator />
+    </div>
+  );
+};

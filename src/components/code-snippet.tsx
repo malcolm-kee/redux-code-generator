@@ -7,10 +7,10 @@ type CodeSnippetProps = {
   code: string;
   language?: string;
 };
-export const CodeSnippet: React.FunctionComponent<CodeSnippetProps> = ({
+export const CodeSnippet = ({
   code,
-  language = 'javascript'
-}) => (
+  language = 'javascript',
+}: CodeSnippetProps) => (
   <Highlight {...defaultProps} code={code} language={language}>
     {({ className, style, tokens, getLineProps, getTokenProps }: any) => (
       <pre className={className} style={style}>
@@ -31,11 +31,11 @@ export class CodeSnippetCollapsible extends React.Component<
   { showAll: boolean }
 > {
   state = {
-    showAll: false
+    showAll: false,
   };
 
   handleToggle = () =>
-    this.setState(prevState => ({ showAll: !prevState.showAll }));
+    this.setState((prevState) => ({ showAll: !prevState.showAll }));
 
   render() {
     const props = this.props;

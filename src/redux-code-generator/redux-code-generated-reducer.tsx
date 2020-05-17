@@ -1,22 +1,19 @@
 import * as React from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import generateReducer from '../code-generators/generate-reducer';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
   selectReduxCodeStorePrefix,
-  selectReduxLanguage
+  selectReduxLanguage,
 } from '../redux/redux.selectors';
 import { IRootStore } from '../redux/root.type';
 
-type ReduxCodeGeneratedReducerProps = {
-  code: string;
-};
-const ReduxCodeGeneratedReducerView: React.FunctionComponent<
-  ReduxCodeGeneratedReducerProps
-> = ({ code }) => <CodeContainer title="Reducer" code={code} />;
+const ReduxCodeGeneratedReducerView = (
+  props: ConnectedProps<typeof connector>
+) => <CodeContainer title="Reducer" code={props.code} id="reducer" />;
 
-const mapStates = (state: IRootStore) => {
+const connector = connect((state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
 
   return {
@@ -26,10 +23,10 @@ const mapStates = (state: IRootStore) => {
           selectReduxCodeStorePrefix(state),
           selectReduxLanguage(state)
         )
-      : '// require valid initial state'
+      : '// require valid initial state',
   };
-};
+});
 
-export const ReduxCodeGeneratedReducer = connect(mapStates)(
+export const ReduxCodeGeneratedReducer = connector(
   ReduxCodeGeneratedReducerView
 );

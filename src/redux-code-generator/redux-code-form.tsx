@@ -7,18 +7,18 @@ import { TextAreaField } from '../components/textarea-field';
 import {
   setReduxInitialState,
   setReduxLanguage,
-  setReduxStorePrefix
+  setReduxStorePrefix,
 } from '../redux/redux.actions';
 import {
   selectReduxCodeInitialState,
   selectReduxCodeStorePrefix,
-  selectReduxLanguage
+  selectReduxLanguage,
 } from '../redux/redux.selectors';
 import { SupportedLanguage } from '../redux/redux.type';
 import { IRootStore } from '../redux/root.type';
 
 const styles: React.CSSProperties = {
-  fontFamily: "Consolas, 'Courier New', monospace"
+  fontFamily: "Consolas, 'Courier New', monospace",
 };
 
 const packageLink = (
@@ -45,7 +45,7 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
   language,
   setInitialState,
   setStorePrefix,
-  setLanguage
+  setLanguage,
 }) => (
   <Section variant="highlight">
     <div className="container">
@@ -78,6 +78,7 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
                 <span>Requires {packageLink} package</span>
               )
             }
+            id="language"
           >
             <option value="javascript">Javascript</option>
             <option value="typescript">Typescript</option>
@@ -91,16 +92,13 @@ const ReduxCodeFormView: React.FunctionComponent<ReduxCodeFormProps> = ({
 const mapStates = (state: IRootStore) => ({
   initialState: selectReduxCodeInitialState(state),
   storePrefix: selectReduxCodeStorePrefix(state),
-  language: selectReduxLanguage(state)
+  language: selectReduxLanguage(state),
 });
 
 const mapDispatch = {
   setInitialState: setReduxInitialState,
   setStorePrefix: setReduxStorePrefix,
-  setLanguage: setReduxLanguage
+  setLanguage: setReduxLanguage,
 };
 
-export const ReduxCodeForm = connect(
-  mapStates,
-  mapDispatch
-)(ReduxCodeFormView);
+export const ReduxCodeForm = connect(mapStates, mapDispatch)(ReduxCodeFormView);

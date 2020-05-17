@@ -6,15 +6,19 @@ export const CodeContainer: React.FunctionComponent<{
   title: string;
   code: string;
   language?: string;
-}> = ({ title, code, language }) => (
+  id?: string;
+}> = (props) => (
   <div className="col-xs-12 col-md-6">
     <Panel>
       <PanelHeading>
-        <PanelTitle>{title}</PanelTitle>
+        <PanelTitle>{props.title}</PanelTitle>
       </PanelHeading>
       <PanelBody>
-        <CodeSnippetCollapsible code={code} language={language} />
+        <CodeSnippetCollapsible code={props.code} language={props.language} />
       </PanelBody>
     </Panel>
+    <div id={props.id} hidden>
+      {props.code}
+    </div>
   </div>
 );

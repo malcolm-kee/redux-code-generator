@@ -1,24 +1,23 @@
 import * as React from 'react';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import { generateRootReducer } from '../code-generators/generate-reducer';
 import { CodeContainer } from '../components/code-container';
 import {
   selectParsedInitialState,
   selectReduxCodeStorePrefix,
-  selectReduxLanguage
+  selectReduxLanguage,
 } from '../redux/redux.selectors';
 import { IRootStore } from '../redux/root.type';
 
-type ReduxCodeGeneratedRootReducerProps = {
-  code: string;
-  hasPrefix: boolean;
-};
-const ReduxCodeGeneratedRootReducerView: React.FunctionComponent<
-  ReduxCodeGeneratedRootReducerProps
-> = ({ code, hasPrefix }) =>
-  hasPrefix ? <CodeContainer title="Root Reducer" code={code} /> : null;
+const ReduxCodeGeneratedRootReducerView = ({
+  code,
+  hasPrefix,
+}: ConnectedProps<typeof connector>) =>
+  hasPrefix ? (
+    <CodeContainer title="Root Reducer" code={code} id="root-reducer" />
+  ) : null;
 
-const mapStates = (state: IRootStore) => {
+const connector = connect((state: IRootStore) => {
   const initialState = selectParsedInitialState(state);
   const prefix = selectReduxCodeStorePrefix(state);
 
@@ -30,10 +29,10 @@ const mapStates = (state: IRootStore) => {
             selectReduxCodeStorePrefix(state),
             selectReduxLanguage(state)
           )
-        : '// require valid initial state'
+        : '// require valid initial state',
   };
-};
+});
 
-export const ReduxCodeGeneratedRootReducer = connect(mapStates)(
+export const ReduxCodeGeneratedRootReducer = connector(
   ReduxCodeGeneratedRootReducerView
 );
