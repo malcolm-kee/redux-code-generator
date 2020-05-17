@@ -1,5 +1,7 @@
 # Redux Code Generator
 
+[![Coverage Status](https://coveralls.io/repos/github/malcolm-kee/redux-code-generator/badge.svg?branch=master)](https://coveralls.io/github/malcolm-kee/redux-code-generator?branch=master)
+
 An application to generate redux code based on initial states.
 
 [Site]
