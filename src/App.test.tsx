@@ -1,7 +1,13 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import * as React from 'react';
 import { App } from './App';
 import { renderWithState } from './test-lib';
+
+test('it can renders', async () => {
+  renderWithState(<App />);
+
+  await waitFor(() => {})
+});
 
 test('action keys value', async () => {
   renderWithState(<App />);
